@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:orientation="vertical">
+
+    <!-- Header Toolbar (Đã xóa nút quay lại, chỉ giữ tiêu đề cho tab chính) -->
+    <RelativeLayout
+        android:id="@+id/header_order"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="#FFFFFF"
+        android:paddingHorizontal="16dp"
+        app:elevation="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Lịch Sử Mua Hàng"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <!-- Container chứa nội dung bên dưới -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 1. Danh sách đơn hàng (Hiển thị khi Database CÓ dữ liệu) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_order_history"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="16dp"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_order_history" />
+
+        <!-- 2. Giao diện Đơn Hàng Trống (Hiển thị mặc định khi Database TRỐNG) -->
+        <LinearLayout
+            android:id="@+id/layout_empty_orders"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:alpha="0.4"
+                android:src="@android:drawable/ic_menu_agenda"
+                app:tint="#FF5722" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Chưa có đơn hàng nào"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="Bạn chưa thực hiện đơn hàng nào.\nHãy mua sắm ngay để trải nghiệm nhé!"
+                android:textColor="#757575"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_shop_now"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="#111111"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="24dp"
+                android:text="Khám phá sản phẩm"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:rippleColor="#FF5722" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

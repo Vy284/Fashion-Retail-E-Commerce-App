@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_top_rounded"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Thanh ngang nhỏ kéo mở (Indicator bar ở đầu Bottom Sheet) -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#D1D1D1" />
+
+    <!-- ================= PHẦN 1: SẮP XẾP ================= -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sắp xếp"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/rb_default"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Mặc định"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_price_low_high"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Giá Thấp -&gt; Cao"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_price_high_low"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Giá Cao -&gt; Thấp"
+            android:textColor="#333333"
+            android:textSize="14sp" />
+    </RadioGroup>
+
+    <!-- Đường kẻ ngang phân cách -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="#EFEFEF" />
+
+    <!-- ================= PHẦN 2: THƯƠNG HIỆU ================= -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thương hiệu"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Dùng ChipGroup để hiển thị danh sách hãng giày -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group_brands"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:singleSelection="false">
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nike"
+            android:textColor="@color/chip_text_color_selector"
+            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            app:chipStrokeColor="#FF5722"
+            app:chipStrokeWidth="1dp" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Adidas"
+            android:textColor="@color/chip_text_color_selector"
+            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            app:chipStrokeColor="#E0E0E0"
+            app:chipStrokeWidth="1dp" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Jordan"
+            android:textColor="@color/chip_text_color_selector"
+            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            app:chipStrokeColor="#E0E0E0"
+            app:chipStrokeWidth="1dp" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vans"
+            android:textColor="@color/chip_text_color_selector"
+            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            app:chipStrokeColor="#E0E0E0"
+            app:chipStrokeWidth="1dp" />
+
+        <com.google.android.material.chip.Chip
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Balance"
+            android:textColor="@color/chip_text_color_selector"
+            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            app:chipStrokeColor="#E0E0E0"
+            app:chipStrokeWidth="1dp" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- ================= PHẦN 3: NÚT BẤM (XÓA & ÁP DỤNG) ================= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal"
+        android:weightSum="2">
+
+        <!-- Nút Xóa (Reset) -->
+        <Button
+            android:id="@+id/btn_clear"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="#FFFFFF"
+            android:text="Xóa"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            app:strokeColor="#E0E0E0"
+            app:strokeWidth="1dp"
+            style="?attr/materialButtonOutlinedStyle" />
+
+        <!-- Nút Áp Dụng (Màu cam chủ đạo #FF5722) -->
+        <Button
+            android:id="@+id/btn_apply"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#FF5722"
+            android:text="Áp dụng"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

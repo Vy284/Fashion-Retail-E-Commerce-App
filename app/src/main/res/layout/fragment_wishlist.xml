@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAFAFA"
+    android:orientation="vertical">
+
+    <!-- ================= 1. TOOLBAR / HEADER (Đã xóa nút quay lại) ================= -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#FFFFFF"
+        android:paddingHorizontal="16dp"
+        app:elevation="4dp">
+
+        <!-- Tiêu đề "Yêu Thích" nằm chính giữa -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Yêu Thích"
+            android:textColor="#000000"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
+
+    <!-- Đường gạch ngang phân cách nhẹ -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#EFEFEF" />
+
+    <!-- ================= 2. KHUNG NỘI DUNG (Quản lý 2 trạng thái) ================= -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- TRẠNG THÁI 1: CÓ SẢN PHẨM YÊU THÍCH (Hiển thị RecyclerView danh sách) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_wishlist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="16dp"
+            android:visibility="visible"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_wishlist" />
+
+        <!-- TRẠNG THÁI 2: KHÔNG CÓ SẢN PHẨM NÀO -->
+        <LinearLayout
+            android:id="@+id/layout_empty_wishlist"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="32dp"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:alpha="0.4"
+                android:src="@android:drawable/ic_menu_my_calendar"
+                app:tint="#FF5722" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Chưa có sản phẩm yêu thích"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="Hãy nhấn vào biểu tượng trái tim ở sản phẩm\nđể lưu lại những món đồ bạn quan tâm nhé!"
+                android:textColor="#757575"
+                android:textSize="14sp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_explore"
+                android:layout_width="wrap_content"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
+                android:backgroundTint="#111111"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:paddingHorizontal="24dp"
+                android:text="Khám phá ngay"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:rippleColor="#FF5722" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <!-- ================= 3. THANH MENU DƯỚI (BOTTOM NAVIGATION) ================= -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        app:elevation="8dp"
+        app:menu="@anim/bottom_navigation_menu" /> <!-- Lưu ý: Thay menu_resource tương ứng với menu của bạn nếu có sẵn -->
+
+</LinearLayout>

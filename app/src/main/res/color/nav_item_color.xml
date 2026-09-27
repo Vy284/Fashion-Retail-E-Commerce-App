@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Màu khi được CHỌN (giống màu "Trang chủ" trong hình) -->
+    <item android:color="#FF5722" android:state_checked="true" />
+
+    <!-- Màu khi KHÔNG được chọn (giống màu "Đơn hàng", "Yêu thích"...) -->
+    <item android:color="#8A8E9B" android:state_checked="false" />
+</selector>
