@@ -7,15 +7,14 @@
     android:background="#FAFAFA"
     android:orientation="vertical">
 
-    <!-- ================= 1. TOOLBAR / HEADER (Đã xóa nút quay lại) ================= -->
+    <!-- ================= 1. TOOLBAR / HEADER ================= -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#FFFFFF"
-        android:paddingHorizontal="16dp"
-        app:elevation="4dp">
+        android:elevation="4dp"
+        android:paddingHorizontal="16dp">
 
-        <!-- Tiêu đề "Yêu Thích" nằm chính giữa -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -26,26 +25,25 @@
             android:textStyle="bold" />
     </RelativeLayout>
 
-    <!-- Đường gạch ngang phân cách nhẹ -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#EFEFEF" />
 
-    <!-- ================= 2. KHUNG NỘI DUNG (Quản lý 2 trạng thái) ================= -->
+    <!-- ================= 2. KHUNG NỘI DUNG ================= -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- TRẠNG THÁI 1: CÓ SẢN PHẨM YÊU THÍCH (Hiển thị RecyclerView danh sách) -->
+        <!-- TRẠNG THÁI 1: CÓ SẢN PHẨM YÊU THÍCH -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_wishlist"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:padding="16dp"
-            android:visibility="visible"
+            android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="3"
             tools:listitem="@layout/item_wishlist" />
@@ -64,7 +62,7 @@
                 android:layout_width="96dp"
                 android:layout_height="96dp"
                 android:alpha="0.4"
-                android:src="@android:drawable/ic_menu_my_calendar"
+                android:src="@android:drawable/btn_star_big_off"
                 app:tint="#FF5722" />
 
             <TextView
@@ -104,14 +102,5 @@
         </LinearLayout>
 
     </FrameLayout>
-
-    <!-- ================= 3. THANH MENU DƯỚI (BOTTOM NAVIGATION) ================= -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        app:elevation="8dp"
-        app:menu="@menu/bottom_nav_menu" /> <!-- Lưu ý: Thay menu_resource tương ứng với menu của bạn nếu có sẵn -->
 
 </LinearLayout>

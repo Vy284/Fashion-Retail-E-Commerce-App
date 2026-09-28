@@ -1,13 +1,15 @@
 package com.example.shoestoreapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import com.example.shoestoreapplication.database.DatabaseHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView; // Thêm import này
+import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,6 +17,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Khởi tạo Database
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        dbHelper.getWritableDatabase();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 
@@ -28,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
                     .commit();
         }
 
-
         // Bắt sự kiện click chọn menu item
         bottomNav.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
             @Override
@@ -38,14 +43,13 @@ public class MainActivity extends AppCompatActivity {
 
                 if (itemId == R.id.nav_home) {
                     selectedFragment = new HomeFragment();
-                } else if (itemId == R.id.nav_home) {
-                    selectedFragment = new HomeFragment();
-                } else if (itemId == R.id.nav_orders) {
-                    selectedFragment = new OrdersFragment();
-                } else if (itemId == R.id.nav_favorite) { // Sửa từ nav_wishlist thành nav_favorite
+                } else if (itemId == R.id.nav_wishlist) {
                     selectedFragment = new WishlistFragment();
                 } else if (itemId == R.id.nav_cart) {
                     selectedFragment = new CartFragment();
+                } else if (itemId == R.id.nav_profile) {
+                    startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+                    return false;
                 }
 
                 if (selectedFragment != null) {

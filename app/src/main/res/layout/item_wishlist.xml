@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -23,10 +23,10 @@
             android:layout_height="88dp"
             android:background="#F0F0F0"
             android:scaleType="centerCrop"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Corner.Medium"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
             tools:src="@android:drawable/ic_menu_gallery" />
 
-        <!-- Nút xóa (Thùng rác) ở góc trên bên phải -->
+        <!-- Nút xóa ở góc trên bên phải -->
         <ImageButton
             android:id="@+id/btn_remove"
             android:layout_width="36dp"
@@ -48,7 +48,6 @@
             android:layout_toStartOf="@id/btn_remove"
             android:orientation="vertical">
 
-            <!-- Thương hiệu -->
             <TextView
                 android:id="@+id/tv_brand"
                 android:layout_width="wrap_content"
@@ -57,7 +56,6 @@
                 android:textColor="#888888"
                 android:textSize="12sp" />
 
-            <!-- Tên sản phẩm -->
             <TextView
                 android:id="@+id/tv_product_name"
                 android:layout_width="wrap_content"
@@ -68,7 +66,6 @@
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
-            <!-- Giá tiền (Màu cam chủ đạo) -->
             <TextView
                 android:id="@+id/tv_price"
                 android:layout_width="wrap_content"
@@ -80,7 +77,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Badge Size và Nút Thêm vào giỏ hàng ở hàng dưới bên phải -->
+        <!-- Badge Size và nút thêm vào giỏ hàng -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -89,7 +86,6 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- Khung hiển thị Size -->
             <TextView
                 android:id="@+id/tv_size"
                 android:layout_width="wrap_content"
@@ -103,7 +99,6 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <!-- Nút thêm vào giỏ hàng nhanh màu cam -->
             <ImageButton
                 android:id="@+id/btn_add_to_cart"
                 android:layout_width="36dp"
@@ -118,4 +113,4 @@
 
     </RelativeLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>
