@@ -1,26 +1,34 @@
 package com.example.shoestoreapplication.database;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
-
     private static final String DATABASE_NAME = "shoes_retail.db";
     private static final int DATABASE_VERSION = 1;
-
-    private static final String SQL_FILE =
-            "database/shoes_retail_ecommerce_schema_seed.sql";
+    private static final String SQL_FILE = "database/shoes_retail_ecommerce_schema_seed.sql";
 
     private final Context context;
+
+    // Notifications Table Constants
+    public static final String TABLE_NOTIFICATIONS = "Notifications";
+    public static final String COLUMN_NOTIFICATION_ID = "notification_id";
+    public static final String COLUMN_NOTIF_USER_ID = "user_id";
+    public static final String COLUMN_NOTIF_ORDER_ID = "order_id";
+    public static final String COLUMN_NOTIF_TITLE = "title";
+    public static final String COLUMN_NOTIF_MESSAGE = "message";
+    public static final String COLUMN_NOTIF_IS_READ = "is_read";
+    public static final String COLUMN_NOTIF_CREATED_AT = "created_at";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -28,74 +36,117 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db) {
-        try {
-            executeSqlFile(db);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void executeSqlFile(SQLiteDatabase db) throws IOException {
-        InputStream inputStream = context.getAssets().open(SQL_FILE);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder sqlBuilder = new StringBuilder();
-        String line;
-
-        while ((line = reader.readLine()) != null) {
-            // Bỏ qua dòng trống và câu lệnh comment
-            String trimmedLine = line.trim();
-            if (trimmedLine.startsWith("--") || trimmedLine.isEmpty()) {
-                continue;
-            }
-            sqlBuilder.append(line).append("\n");
-        }
-        reader.close();
-
-        // Tách các câu lệnh SQL theo dấu chấm phẩy ';'
-        String[] statements = sqlBuilder.toString().split(";");
-
-        for (String rawStatement : statements) {
-            String statement = rawStatement.trim();
-            if (statement.isEmpty()) {
-                continue;
-            }
-
-            // execSQL() KHÔNG hỗ trợ câu lệnh trả về kết quả (SELECT, EXPLAIN...).
-            // Bỏ qua để tránh crash "Queries can be performed using
-            // SQLiteDatabase query or rawQuery methods only".
-            if (isQueryStatement(statement)) {
-                Log.w(TAG, "Skipping non-executable statement (SELECT/EXPLAIN): "
-                        + preview(statement));
-                continue;
-            }
-
-            try {
-                db.execSQL(statement);
-            } catch (Exception e) {
-                // Không để 1 câu lệnh lỗi làm crash toàn bộ app khi tạo DB.
-                // Log lại để dễ debug, rồi tiếp tục với câu tiếp theo.
-                Log.e(TAG, "Failed to execute statement: " + preview(statement), e);
-            }
-        }
-    }
-
-    private boolean isQueryStatement(String statement) {
-        String upper = statement.trim().toUpperCase();
-        return upper.startsWith("SELECT") || upper.startsWith("EXPLAIN");
-    }
-
-    private String preview(String statement) {
-        String oneLine = statement.replaceAll("\\s+", " ").trim();
-        return oneLine.length() > 80 ? oneLine.substring(0, 80) + "..." : oneLine;
+    public void onConfigure(SQLiteDatabase db) {
+        super.onConfigure(db);
+        // Bật hỗ trợ khóa ngoại (FOREIGN KEY) trong SQLite
+        db.setForeignKeyConstraintsEnabled(true);
     }
 
     @Override
-    public void onUpgrade(
-            SQLiteDatabase db,
-            int oldVersion,
-            int newVersion
-    ) {
-        // Chưa có migration
+    public void onCreate(SQLiteDatabase db) {
+        executeSqlScript(db);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        executeSqlScript(db);
+    }
+
+    private void executeSqlScript(SQLiteDatabase db) {
+        try {
+            InputStream is = context.getAssets().open(SQL_FILE);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            StringBuilder statement = new StringBuilder();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String trimmedLine = line.trim();
+                if (trimmedLine.isEmpty() || trimmedLine.startsWith("--")) {
+                    continue;
+                }
+                statement.append(line).append(" ");
+                if (trimmedLine.endsWith(";")) {
+                    db.execSQL(statement.toString());
+                    statement.setLength(0);
+                }
+            }
+            reader.close();
+            is.close();
+            Log.d(TAG, "Database schema and seed executed successfully.");
+        } catch (Exception e) {
+            Log.e(TAG, "Error executing SQL script: " + e.getMessage(), e);
+        }
+    }
+
+    // ==========================================
+    // NOTIFICATIONS CRUD METHODS
+    // ==========================================
+
+    // 1. Thêm thông báo mới
+    public long addNotification(int userId, Integer orderId, String title, String message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTIF_USER_ID, userId);
+        if (orderId != null) {
+            values.put(COLUMN_NOTIF_ORDER_ID, orderId);
+        } else {
+            values.putNull(COLUMN_NOTIF_ORDER_ID);
+        }
+        values.put(COLUMN_NOTIF_TITLE, title);
+        values.put(COLUMN_NOTIF_MESSAGE, message);
+        values.put(COLUMN_NOTIF_IS_READ, 0);
+
+        long id = db.insert(TABLE_NOTIFICATIONS, null, values);
+        db.close();
+        return id;
+    }
+
+    // 2. Lấy danh sách thông báo theo user_id (không đóng db để Cursor hoạt động tốt ở UI)
+    public Cursor getNotificationsByUserId(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_NOTIFICATIONS +
+                " WHERE " + COLUMN_NOTIF_USER_ID + " = ?" +
+                " ORDER BY " + COLUMN_NOTIFICATION_ID + " DESC";
+        return db.rawQuery(query, new String[]{String.valueOf(userId)});
+    }
+
+    // 3. Đánh dấu thông báo đã đọc
+    public boolean markNotificationAsRead(int notificationId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTIF_IS_READ, 1);
+
+        int rows = db.update(TABLE_NOTIFICATIONS, values,
+                COLUMN_NOTIFICATION_ID + " = ?",
+                new String[]{String.valueOf(notificationId)});
+        db.close();
+        return rows > 0;
+    }
+
+    // 4. Lấy số lượng thông báo chưa đọc
+    public int getUnreadNotificationCount(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_NOTIFICATIONS +
+                " WHERE " + COLUMN_NOTIF_USER_ID + " = ? AND " + COLUMN_NOTIF_IS_READ + " = 0";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        int count = 0;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+            cursor.close();
+        }
+        db.close();
+        return count;
+    }
+
+    // 5. Xóa 1 thông báo
+    public boolean deleteNotification(int notificationId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_NOTIFICATIONS,
+                COLUMN_NOTIFICATION_ID + " = ?",
+                new String[]{String.valueOf(notificationId)});
+        db.close();
+        return rows > 0;
     }
 }
