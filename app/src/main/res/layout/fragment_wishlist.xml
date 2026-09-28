@@ -112,6 +112,6 @@
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
         app:elevation="8dp"
-        app:menu="@anim/bottom_navigation_menu" /> <!-- Lưu ý: Thay menu_resource tương ứng với menu của bạn nếu có sẵn -->
+        app:menu="@menu/bottom_nav_menu" /> <!-- Lưu ý: Thay menu_resource tương ứng với menu của bạn nếu có sẵn -->
 
 </LinearLayout>

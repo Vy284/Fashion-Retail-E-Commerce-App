@@ -5,14 +5,14 @@
     android:layout_height="match_parent"
     android:background="#D1C8B8">
 
-    <!-- 1. Ảnh nền giày -->
+    <!-- 1. Ảnh nền giày (Đã thay bằng drawable hệ thống để tránh lỗi thiếu resource) -->
     <ImageView
         android:id="@+id/img_welcome_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="Ảnh nền giày"
         android:scaleType="centerCrop"
-        android:src="@drawable/img_welcome_shoe" />
+        android:src="@android:drawable/ic_menu_gallery" />
 
     <!-- 2. Lớp phủ tối nhẹ giúp chữ dễ đọc hơn -->
     <View

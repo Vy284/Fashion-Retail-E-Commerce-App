@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_bottom_sheet_top_rounded"
+    android:background="#FFFFFF"
     android:orientation="vertical"
     android:padding="20dp">
 
@@ -85,8 +85,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nike"
-            android:textColor="@color/chip_text_color_selector"
-            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            android:textColor="#333333"
+            app:chipBackgroundColor="#F0F0F0"
             app:chipStrokeColor="#FF5722"
             app:chipStrokeWidth="1dp" />
 
@@ -95,8 +95,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Adidas"
-            android:textColor="@color/chip_text_color_selector"
-            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            android:textColor="#333333"
+            app:chipBackgroundColor="#F0F0F0"
             app:chipStrokeColor="#E0E0E0"
             app:chipStrokeWidth="1dp" />
 
@@ -105,8 +105,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Jordan"
-            android:textColor="@color/chip_text_color_selector"
-            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            android:textColor="#333333"
+            app:chipBackgroundColor="#F0F0F0"
             app:chipStrokeColor="#E0E0E0"
             app:chipStrokeWidth="1dp" />
 
@@ -115,8 +115,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Vans"
-            android:textColor="@color/chip_text_color_selector"
-            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            android:textColor="#333333"
+            app:chipBackgroundColor="#F0F0F0"
             app:chipStrokeColor="#E0E0E0"
             app:chipStrokeWidth="1dp" />
 
@@ -125,8 +125,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New Balance"
-            android:textColor="@color/chip_text_color_selector"
-            app:chipBackgroundColor="@color/chip_bg_color_selector"
+            android:textColor="#333333"
+            app:chipBackgroundColor="#F0F0F0"
             app:chipStrokeColor="#E0E0E0"
             app:chipStrokeWidth="1dp" />
     </com.google.android.material.chip.ChipGroup>
@@ -143,25 +143,25 @@
         <!-- Nút Xóa (Reset) -->
         <Button
             android:id="@+id/btn_clear"
+            style="?attr/materialButtonOutlinedStyle"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_weight="1"
             android:layout_marginEnd="8dp"
+            android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
             android:text="Xóa"
             android:textColor="#000000"
             android:textSize="15sp"
             app:strokeColor="#E0E0E0"
-            app:strokeWidth="1dp"
-            style="?attr/materialButtonOutlinedStyle" />
+            app:strokeWidth="1dp" />
 
-        <!-- Nút Áp Dụng (Màu cam chủ đạo #FF5722) -->
+        <!-- Nút Áp Dụng -->
         <Button
             android:id="@+id/btn_apply"
             android:layout_width="0dp"
             android:layout_height="50dp"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:layout_weight="1"
             android:backgroundTint="#FF5722"
             android:text="Áp dụng"
             android:textColor="#FFFFFF"

@@ -7,7 +7,7 @@
     android:background="#FAFAFA"
     android:orientation="vertical">
 
-    <!-- ================= 1. HEADER / THANH TIÊU ĐỀ (Đã xóa nút back) ================= -->
+    <!-- ================= 1. HEADER / THANH TIÊU ĐỀ ================= -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
@@ -146,6 +146,6 @@
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
         app:elevation="8dp"
-        app:menu="@anim/bottom_navigation_menu" />
+        app:menu="@menu/bottom_navigation_menu" />
 
 </LinearLayout>

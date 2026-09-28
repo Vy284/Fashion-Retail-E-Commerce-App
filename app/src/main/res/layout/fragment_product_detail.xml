@@ -40,10 +40,10 @@
             android:layout_height="60dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/bg_favorite_button"
+            android:background="#F0F0F0"
             android:contentDescription="Yêu thích"
             android:padding="14dp"
-            android:src="@drawable/ic_favorite_border"
+            android:src="@android:drawable/btn_star_big_off"
             app:tint="#FF5722" />
     </RelativeLayout>
 
@@ -61,7 +61,7 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- Ảnh chính sản phẩm (Siêu to khổng lồ: 400dp) -->
+            <!-- Ảnh chính sản phẩm -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="400dp"
@@ -78,10 +78,10 @@
                     android:layout_height="match_parent"
                     android:contentDescription="Ảnh sản phẩm chính"
                     android:scaleType="centerCrop"
-                    tools:src="@drawable/img_welcome_shoe" />
+                    android:src="@android:drawable/ic_menu_gallery" />
             </androidx.cardview.widget.CardView>
 
-            <!-- Ảnh thu nhỏ (Thumbnails cực lớn: 100dp) -->
+            <!-- Ảnh thu nhỏ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -93,29 +93,35 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_thumbnail_selected"
+                    android:background="#DDDDDD"
                     android:scaleType="centerCrop"
-                    tools:src="@drawable/img_welcome_shoe" />
+                    android:src="@android:drawable/ic_menu_gallery" />
+
                 <ImageView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_marginEnd="16dp"
+                    android:background="#F0F0F0"
                     android:scaleType="centerCrop"
-                    tools:src="@drawable/img_welcome_shoe" />
+                    android:src="@android:drawable/ic_menu_gallery" />
+
                 <ImageView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_marginEnd="16dp"
+                    android:background="#F0F0F0"
                     android:scaleType="centerCrop"
-                    tools:src="@drawable/img_welcome_shoe" />
+                    android:src="@android:drawable/ic_menu_gallery" />
+
                 <ImageView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
+                    android:background="#F0F0F0"
                     android:scaleType="centerCrop"
-                    tools:src="@drawable/img_welcome_shoe" />
+                    android:src="@android:drawable/ic_menu_gallery" />
             </LinearLayout>
 
-            <!-- Thương hiệu, Tên, Giá (Cỡ chữ cực đại) -->
+            <!-- Thương hiệu, Tên, Giá -->
             <TextView
                 android:id="@+id/tv_product_brand"
                 android:layout_width="wrap_content"
@@ -146,7 +152,7 @@
                 android:textStyle="bold"
                 tools:text="5.490.000đ" />
 
-            <!-- Chọn màu sắc (Vòng tròn màu 70dp) -->
+            <!-- Chọn màu sắc -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -161,13 +167,32 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
                 android:orientation="horizontal">
-                <View android:layout_width="70dp" android:layout_height="70dp" android:layout_marginEnd="20dp" android:background="@drawable/bg_color_red"/>
-                <View android:layout_width="70dp" android:layout_height="70dp" android:layout_marginEnd="20dp" android:background="@drawable/bg_color_black"/>
-                <View android:layout_width="70dp" android:layout_height="70dp" android:layout_marginEnd="20dp" android:background="@drawable/bg_color_blue"/>
-                <View android:layout_width="70dp" android:layout_height="70dp" android:background="@drawable/bg_color_grey"/>
+
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="#FF0000" />
+
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="#000000" />
+
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_marginEnd="20dp"
+                    android:background="#0000FF" />
+
+                <View
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:background="#888888" />
             </LinearLayout>
 
-            <!-- Chọn kích cỡ (Ô size siêu khổng lồ: 72dp x 64dp, chữ 24sp) -->
+            <!-- Chọn kích cỡ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -187,7 +212,7 @@
                     android:layout_width="72dp"
                     android:layout_height="64dp"
                     android:layout_marginEnd="12dp"
-                    android:background="@drawable/bg_size_unselected"
+                    android:background="#EEEEEE"
                     android:gravity="center"
                     android:text="38"
                     android:textColor="#000000"
@@ -198,7 +223,7 @@
                     android:layout_width="72dp"
                     android:layout_height="64dp"
                     android:layout_marginEnd="12dp"
-                    android:background="@drawable/bg_size_unselected"
+                    android:background="#EEEEEE"
                     android:gravity="center"
                     android:text="39"
                     android:textColor="#000000"
@@ -209,7 +234,7 @@
                     android:layout_width="72dp"
                     android:layout_height="64dp"
                     android:layout_marginEnd="12dp"
-                    android:background="@drawable/bg_size_unselected"
+                    android:background="#EEEEEE"
                     android:gravity="center"
                     android:text="40"
                     android:textColor="#000000"
@@ -220,7 +245,7 @@
                     android:layout_width="72dp"
                     android:layout_height="64dp"
                     android:layout_marginEnd="12dp"
-                    android:background="@drawable/bg_size_selected"
+                    android:background="#111111"
                     android:gravity="center"
                     android:text="41"
                     android:textColor="#FFFFFF"
@@ -231,7 +256,7 @@
                     android:layout_width="72dp"
                     android:layout_height="64dp"
                     android:layout_marginEnd="12dp"
-                    android:background="@drawable/bg_size_unselected"
+                    android:background="#EEEEEE"
                     android:gravity="center"
                     android:text="42"
                     android:textColor="#000000"
@@ -241,7 +266,7 @@
                 <TextView
                     android:layout_width="72dp"
                     android:layout_height="64dp"
-                    android:background="@drawable/bg_size_unselected"
+                    android:background="#EEEEEE"
                     android:gravity="center"
                     android:text="43"
                     android:textColor="#000000"
@@ -263,15 +288,15 @@
                 android:id="@+id/tv_product_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:lineSpacingExtra="12dp"
                 android:textColor="#333333"
                 android:textSize="20sp"
-                android:lineSpacingExtra="12dp"
                 tools:text="Giày thể thao cao cấp chính hãng thiết kế trẻ trung, ôm chân, đế cao su chống trượt bền bỉ phù hợp cho mọi hoạt động dạo phố và thể thao." />
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- ================= 3. THANH HÀNH ĐỘNG DƯỚI ĐÁY (CART BUTTON & QUANTITY) ================= -->
+    <!-- ================= 3. THANH HÀNH ĐỘNG DƯỚI ĐÁY ================= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -281,12 +306,12 @@
         android:padding="24dp"
         app:elevation="20dp">
 
-        <!-- Bộ tăng giảm số lượng khổng lồ -->
+        <!-- Bộ tăng giảm số lượng -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="72dp"
             android:layout_marginEnd="20dp"
-            android:background="@drawable/bg_quantity_box"
+            android:background="#F0F0F0"
             android:gravity="center"
             android:orientation="horizontal"
             android:paddingHorizontal="12dp">
@@ -320,7 +345,7 @@
                 app:tint="#111111" />
         </LinearLayout>
 
-        <!-- Nút Thêm vào giỏ hàng (Cart Button) Siêu To Khổng Lồ -->
+        <!-- Nút Thêm vào giỏ hàng -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_add_to_cart"
             android:layout_width="0dp"
@@ -333,9 +358,9 @@
             android:textStyle="bold"
             app:cornerRadius="20dp"
             app:icon="@drawable/ic_cart"
-            app:iconGravity="text_start"
-            app:iconSize="32dp"
+            app:iconGravity="start"
             app:iconPadding="12dp"
+            app:iconSize="32dp"
             app:iconTint="#FFFFFF" />
     </LinearLayout>
 

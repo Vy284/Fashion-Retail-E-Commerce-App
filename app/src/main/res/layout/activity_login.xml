@@ -57,7 +57,7 @@
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_input_field"
             android:hint="Hãy nhập email hoặc số điện thoại"
-            android:hintTextColor="#888888"
+            android:textColorHint="#888888"
             android:imeOptions="actionNext"
             android:inputType="textEmailAddress"
             android:paddingHorizontal="18dp"
@@ -87,7 +87,7 @@
                 android:layout_toStartOf="@id/btn_toggle_password"
                 android:background="@null"
                 android:hint="Hãy nhập mật khẩu"
-                android:hintTextColor="#888888"
+                android:textColorHint="#888888"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:paddingStart="18dp"
@@ -111,18 +111,18 @@
                 app:tint="#757575" />
         </RelativeLayout>
 
-<!--        &lt;!&ndash; Quên mật khẩu? &ndash;&gt;-->
-<!--        <TextView-->
-<!--            android:id="@+id/tv_forgot_password"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="end"-->
-<!--            android:layout_marginTop="12dp"-->
-<!--            android:padding="4dp"-->
-<!--            android:text="Quên mật khẩu?"-->
-<!--            android:textColor="#FF5722"-->
-<!--            android:textSize="13sp"-->
-<!--            android:textStyle="bold" />-->
+        <!--        &lt;!&ndash; Quên mật khẩu? &ndash;&gt;-->
+        <!--        <TextView-->
+        <!--            android:id="@+id/tv_forgot_password"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_gravity="end"-->
+        <!--            android:layout_marginTop="12dp"-->
+        <!--            android:padding="4dp"-->
+        <!--            android:text="Quên mật khẩu?"-->
+        <!--            android:textColor="#FF5722"-->
+        <!--            android:textSize="13sp"-->
+        <!--            android:textStyle="bold" />-->
 
         <!-- Khoảng không linh hoạt đẩy nút xuống đáy màn hình -->
         <View
