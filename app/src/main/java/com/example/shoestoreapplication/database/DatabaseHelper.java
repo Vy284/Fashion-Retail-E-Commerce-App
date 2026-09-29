@@ -29,7 +29,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private final Context context;
 
-    // Notifications Table Constants
     public static final String TABLE_NOTIFICATIONS = "Notifications";
     public static final String COLUMN_NOTIFICATION_ID = "notification_id";
     public static final String COLUMN_NOTIF_USER_ID = "user_id";
@@ -47,7 +46,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onConfigure(SQLiteDatabase db) {
         super.onConfigure(db);
-        // Bật hỗ trợ khóa ngoại (FOREIGN KEY) trong SQLite
         db.setForeignKeyConstraintsEnabled(true);
     }
 
@@ -58,13 +56,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Xóa hết bảng cũ rồi tạo lại, vì script dùng CREATE TABLE sẽ lỗi nếu bảng đã tồn tại
         dropAllTables(db);
         executeSqlScript(db);
     }
 
     private void dropAllTables(SQLiteDatabase db) {
-        // Hoãn kiểm tra khóa ngoại tới lúc commit để xóa bảng theo thứ tự nào cũng được
         db.execSQL("PRAGMA defer_foreign_keys = ON");
         List<String> tables = new ArrayList<>();
         try (Cursor c = db.rawQuery(
@@ -87,7 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String line;
 
             while ((line = reader.readLine()) != null) {
-                String trimmedLine = line.replace("\uFEFF", "").trim(); // bỏ BOM nếu có
+                String trimmedLine = line.replace("\uFEFF", "").trim();
                 if (trimmedLine.isEmpty() || trimmedLine.startsWith("--")) {
                     continue;
                 }
@@ -99,14 +95,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
             Log.d(TAG, "Database schema and seed executed successfully.");
         } catch (IOException e) {
-            // Ném lại để không để lại database tạo dở (version đã ghi nhận nhưng thiếu bảng)
             throw new RuntimeException("Không đọc được file SQL: " + SQL_FILE, e);
         }
     }
 
     private void runStatement(SQLiteDatabase db, String sql) {
         String upper = sql.toUpperCase(Locale.ROOT);
-        // execSQL không chạy được câu trả về dòng dữ liệu; Android đã tự bọc transaction
         if (upper.startsWith("SELECT") || upper.startsWith("PRAGMA")
                 || upper.startsWith("BEGIN") || upper.startsWith("COMMIT")
                 || upper.startsWith("END")) {
@@ -117,15 +111,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.execSQL(sql);
         } catch (SQLException e) {
             Log.e(TAG, "Lỗi ở câu lệnh: " + sql, e);
-            throw e; // để onCreate rollback
+            throw e;
         }
     }
-
-    // ==========================================
-    // NOTIFICATIONS CRUD METHODS
-    // (Không gọi db.close(): SQLiteOpenHelper dùng chung một kết nối, đóng nó sẽ
-    //  làm các Cursor đang mở ở UI bị lỗi. Helper tự quản lý việc đóng.)
-    // ==========================================
 
     // 1. Thêm thông báo mới
     public long addNotification(int userId, Integer orderId, String title, String message) {
@@ -144,7 +132,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.insert(TABLE_NOTIFICATIONS, null, values);
     }
 
-    // 2. Lấy danh sách thông báo theo user_id (Cursor do nơi gọi tự đóng)
+    // 2. Lấy danh sách thông báo theo user_id
     public Cursor getNotificationsByUserId(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + TABLE_NOTIFICATIONS +
@@ -187,6 +175,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(notificationId)});
         return rows > 0;
     }
+
     // 6. register
     public long registerUser(String fullName, String email, String phone, String password) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -196,10 +185,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put("phone", phone);
         values.put("password_hash", hashPassword(password));
 
-        long id = db.insert("Users", null, values);
-        db.close();
-        return id;
+        return db.insert("Users", null, values);
     }
+
     // 7. check valid user
     public int checkLogin(String emailOrPhone, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -212,9 +200,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             userId = cursor.getInt(0);
         }
         cursor.close();
-        db.close();
         return userId;
     }
+
     // 8. check user exist
     public boolean isUserExists(String email, String phone) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -223,14 +211,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         boolean exists = cursor.getCount() > 0;
         cursor.close();
-        db.close();
         return exists;
     }
+
     // Private methods
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes());
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
@@ -244,13 +232,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             throw new RuntimeException("SHA-256 algorithm not found", e);
         }
     }
+
     // get user
     public Cursor getUserById(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM Users WHERE user_id = ?", new String[]{String.valueOf(userId)});
     }
 
-   // update user profile
+    // update user profile
     public boolean updateUserProfile(int userId, String fullName, String phone, String avatarUrl) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -263,8 +252,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int rows = db.update("Users", values, "user_id = ?", new String[]{String.valueOf(userId)});
         return rows > 0;
     }
-    // check old pass word
 
+    // check old pass word
     public boolean checkOldPassword(int userId, String oldPassword) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT user_id FROM Users WHERE user_id = ? AND password_hash = ?",
@@ -282,6 +271,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         int rows = db.update("Users", values, "user_id = ?", new String[]{String.valueOf(userId)});
         return rows > 0;
     }
+
     // get list featured product
     public List<Product> getFeaturedProducts() {
         List<Product> productList = new ArrayList<>();
@@ -296,11 +286,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 Product product = new Product(
-                        cursor.getInt(0), // id
-                        cursor.getString(1), // name
-                        cursor.getInt(2), // base_price
-                        cursor.getString(3), // brand_name
-                        "" // image
+                        cursor.getInt(0),
+                        cursor.getString(1),
+                        cursor.getInt(2),
+                        cursor.getString(3),
+                        ""
                 );
                 productList.add(product);
             } while (cursor.moveToNext());
@@ -308,7 +298,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return productList;
     }
-
 
     public List<Product> searchProducts(String keyword) {
         List<Product> productList = new ArrayList<>();
