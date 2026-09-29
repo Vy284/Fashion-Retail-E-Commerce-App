@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.shoestoreapplication.models.Product;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -182,5 +186,148 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_NOTIFICATION_ID + " = ?",
                 new String[]{String.valueOf(notificationId)});
         return rows > 0;
+    }
+    // 6. register
+    public long registerUser(String fullName, String email, String phone, String password) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("full_name", fullName);
+        values.put("email", email);
+        values.put("phone", phone);
+        values.put("password_hash", hashPassword(password));
+
+        long id = db.insert("Users", null, values);
+        db.close();
+        return id;
+    }
+    // 7. check valid user
+    public int checkLogin(String emailOrPhone, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int userId = -1;
+
+        String query = "SELECT user_id FROM Users WHERE (email = ? OR phone = ?) AND password_hash = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{emailOrPhone, emailOrPhone, hashPassword(password)});
+
+        if (cursor.moveToFirst()) {
+            userId = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return userId;
+    }
+    // 8. check user exist
+    public boolean isUserExists(String email, String phone) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT user_id FROM Users WHERE email = ? OR phone = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{email, phone});
+
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
+        return exists;
+    }
+    // Private methods
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
+    // get user
+    public Cursor getUserById(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM Users WHERE user_id = ?", new String[]{String.valueOf(userId)});
+    }
+
+   // update user profile
+    public boolean updateUserProfile(int userId, String fullName, String phone, String avatarUrl) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("full_name", fullName);
+        values.put("phone", phone);
+        if (avatarUrl != null) {
+            values.put("avatar_url", avatarUrl);
+        }
+
+        int rows = db.update("Users", values, "user_id = ?", new String[]{String.valueOf(userId)});
+        return rows > 0;
+    }
+    // check old pass word
+
+    public boolean checkOldPassword(int userId, String oldPassword) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT user_id FROM Users WHERE user_id = ? AND password_hash = ?",
+                new String[]{String.valueOf(userId), hashPassword(oldPassword)});
+        boolean isCorrect = cursor.getCount() > 0;
+        cursor.close();
+        return isCorrect;
+    }
+
+    // update password
+    public boolean updatePassword(int userId, String newPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("password_hash", hashPassword(newPassword));
+        int rows = db.update("Users", values, "user_id = ?", new String[]{String.valueOf(userId)});
+        return rows > 0;
+    }
+    // get list featured product
+    public List<Product> getFeaturedProducts() {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                "FROM Products p " +
+                "INNER JOIN Brands b ON p.brand_id = b.brand_id " +
+                "LIMIT 10";
+
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Product product = new Product(
+                        cursor.getInt(0), // id
+                        cursor.getString(1), // name
+                        cursor.getInt(2), // base_price
+                        cursor.getString(3), // brand_name
+                        "" // image
+                );
+                productList.add(product);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return productList;
+    }
+
+
+    public List<Product> searchProducts(String keyword) {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                "FROM Products p " +
+                "INNER JOIN Brands b ON p.brand_id = b.brand_id " +
+                "WHERE p.name LIKE ? OR b.name LIKE ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{"%" + keyword + "%", "%" + keyword + "%"});
+        if (cursor.moveToFirst()) {
+            do {
+                productList.add(new Product(
+                        cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getString(3), ""
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return productList;
     }
 }

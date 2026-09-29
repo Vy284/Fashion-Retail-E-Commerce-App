@@ -1,7 +1,7 @@
 package com.example.shoestoreapplication;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Button;
@@ -14,59 +14,159 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.imageview.ShapeableImageView;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private ImageButton btnBack;
     private ShapeableImageView imgAvatar;
-    private EditText edtFullname, edtPhone, edtOldPassword, edtNewPassword;
-    private TextView tvHeaderName;
+    private TextView tvHeaderName, tvHeaderEmail;
+    private EditText edtFullName, edtEmail, edtPhone, edtOldPassword, edtNewPassword;
     private Button btnSave;
 
-    // Bộ chọn ảnh từ thư viện thiết bị
-    private final ActivityResultLauncher<Intent> imagePickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri selectedImageUri = result.getData().getData();
-                    if (selectedImageUri != null) {
-                        imgAvatar.setImageURI(selectedImageUri);
+    private DatabaseHelper dbHelper;
+    private SessionManager sessionManager;
+    private int currentUserId;
+    private String selectedAvatarUri = null;
+    private Button btnLogout;
+    private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) {
+
+                        getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        selectedAvatarUri = imageUri.toString();
+                        imgAvatar.setImageURI(imageUri);
                     }
                 }
-            });
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Ánh xạ View
+        dbHelper = new DatabaseHelper(this);
+        sessionManager = new SessionManager(this);
+        currentUserId = sessionManager.getUserId();
+
+        initViews();
+        loadUserData();
+        setupListeners();
+    }
+
+    private void initViews() {
         btnBack = findViewById(R.id.btn_back);
         imgAvatar = findViewById(R.id.img_profile_avatar);
-        edtFullname = findViewById(R.id.edt_fullname);
+        tvHeaderName = findViewById(R.id.tv_header_name);
+        tvHeaderEmail = findViewById(R.id.tv_header_email);
+
+        edtFullName = findViewById(R.id.edt_fullname);
+        edtEmail = findViewById(R.id.edt_email);
         edtPhone = findViewById(R.id.edt_phone);
         edtOldPassword = findViewById(R.id.edt_old_password);
         edtNewPassword = findViewById(R.id.edt_new_password);
-        tvHeaderName = findViewById(R.id.tv_header_name);
-        btnSave = findViewById(R.id.btn_save);
 
-        // 1. Click Nút Back -> Quay lại
+        btnSave = findViewById(R.id.btn_save);
+        btnLogout = findViewById(R.id.btn_logout);
+    }
+
+    private void loadUserData() {
+        Cursor cursor = dbHelper.getUserById(currentUserId);
+        if (cursor != null && cursor.moveToFirst()) {
+            String fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name"));
+            String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+            String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
+            String avatarUrl = cursor.getString(cursor.getColumnIndexOrThrow("avatar_url"));
+
+
+            tvHeaderName.setText(fullName);
+            tvHeaderEmail.setText(email);
+            edtFullName.setText(fullName);
+            edtEmail.setText(email);
+            edtPhone.setText(phone);
+
+
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                try {
+                    imgAvatar.setImageURI(Uri.parse(avatarUrl));
+                    selectedAvatarUri = avatarUrl;
+                } catch (Exception e) {
+                    imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder); // Fallback icon
+                }
+            }
+            cursor.close();
+        }
+    }
+
+    private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
-        // 2. Click Avatar -> Đổi ảnh từ máy
         imgAvatar.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("image/*");
-            imagePickerLauncher.launch(intent);
+            pickImageLauncher.launch(intent);
         });
 
-        // 3. Click Lưu Thay Đổi
-        btnSave.setOnClickListener(v -> {
-            String newName = edtFullname.getText().toString().trim();
-            if (!newName.isEmpty()) {
-                tvHeaderName.setText(newName);
-            }
-            Toast.makeText(this, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show();
+
+        btnSave.setOnClickListener(v -> handleSaveProfile());
+        btnLogout.setOnClickListener(v -> {
+
+            sessionManager.logout();
+
+
+            Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
+    }
+
+    private void handleSaveProfile() {
+        String newName = edtFullName.getText().toString().trim();
+        String newPhone = edtPhone.getText().toString().trim();
+        String oldPass = edtOldPassword.getText().toString().trim();
+        String newPass = edtNewPassword.getText().toString().trim();
+
+        if (newName.isEmpty() || newPhone.isEmpty()) {
+            Toast.makeText(this, "Tên và số điện thoại không được để trống!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        boolean isUpdated = dbHelper.updateUserProfile(currentUserId, newName, newPhone, selectedAvatarUri);
+
+
+        if (!newPass.isEmpty()) {
+            if (oldPass.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (dbHelper.checkOldPassword(currentUserId, oldPass)) {
+                if (newPass.length() < 6) {
+                    Toast.makeText(this, "Mật khẩu mới phải có ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                dbHelper.updatePassword(currentUserId, newPass);
+                edtOldPassword.setText("");
+                edtNewPassword.setText("");
+            } else {
+                Toast.makeText(this, "Mật khẩu hiện tại không đúng!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        if (isUpdated) {
+            Toast.makeText(this, "Cập nhật hồ sơ thành công!", Toast.LENGTH_SHORT).show();
+            tvHeaderName.setText(newName);
+        } else {
+            Toast.makeText(this, "Có lỗi xảy ra, vui lòng thử lại!", Toast.LENGTH_SHORT).show();
+        }
     }
 }
