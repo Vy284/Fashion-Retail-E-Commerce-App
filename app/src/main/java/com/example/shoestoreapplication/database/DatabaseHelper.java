@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -182,5 +184,62 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_NOTIFICATION_ID + " = ?",
                 new String[]{String.valueOf(notificationId)});
         return rows > 0;
+    }
+    // 6. register
+    public long registerUser(String fullName, String email, String phone, String password) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("full_name", fullName);
+        values.put("email", email);
+        values.put("phone", phone);
+        values.put("password_hash", hashPassword(password));
+
+        long id = db.insert("Users", null, values);
+        db.close();
+        return id;
+    }
+    // 7. check valid user
+    public int checkLogin(String emailOrPhone, String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int userId = -1;
+
+        String query = "SELECT user_id FROM Users WHERE (email = ? OR phone = ?) AND password_hash = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{emailOrPhone, emailOrPhone, hashPassword(password)});
+
+        if (cursor.moveToFirst()) {
+            userId = cursor.getInt(0);
+        }
+        cursor.close();
+        db.close();
+        return userId;
+    }
+    // 8. check user exist
+    public boolean isUserExists(String email, String phone) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT user_id FROM Users WHERE email = ? OR phone = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{email, phone});
+
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
+        return exists;
+    }
+    // Private methods
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
     }
 }

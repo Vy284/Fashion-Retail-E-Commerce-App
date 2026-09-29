@@ -12,9 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ShoeStoreApplication">
 
-        <!-- Khai báo đầy đủ tên package cho MainActivity -->
+        <!-- Thiết lập LoginActivity là màn hình khởi chạy đầu tiên -->
         <activity
-            android:name="com.example.shoestoreapplication.MainActivity"
+            android:name="com.example.shoestoreapplication.LoginActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -22,6 +22,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Khai báo RegisterActivity -->
+        <activity
+            android:name="com.example.shoestoreapplication.RegisterActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- MainActivity-->
+        <activity
+            android:name="com.example.shoestoreapplication.MainActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <!-- Khai báo đầy đủ tên package cho ProfileActivity -->
         <activity
