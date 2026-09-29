@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.shoestoreapplication.models.Product;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -241,5 +243,91 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 algorithm not found", e);
         }
+    }
+    // get user
+    public Cursor getUserById(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM Users WHERE user_id = ?", new String[]{String.valueOf(userId)});
+    }
+
+   // update user profile
+    public boolean updateUserProfile(int userId, String fullName, String phone, String avatarUrl) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("full_name", fullName);
+        values.put("phone", phone);
+        if (avatarUrl != null) {
+            values.put("avatar_url", avatarUrl);
+        }
+
+        int rows = db.update("Users", values, "user_id = ?", new String[]{String.valueOf(userId)});
+        return rows > 0;
+    }
+    // check old pass word
+
+    public boolean checkOldPassword(int userId, String oldPassword) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT user_id FROM Users WHERE user_id = ? AND password_hash = ?",
+                new String[]{String.valueOf(userId), hashPassword(oldPassword)});
+        boolean isCorrect = cursor.getCount() > 0;
+        cursor.close();
+        return isCorrect;
+    }
+
+    // update password
+    public boolean updatePassword(int userId, String newPassword) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("password_hash", hashPassword(newPassword));
+        int rows = db.update("Users", values, "user_id = ?", new String[]{String.valueOf(userId)});
+        return rows > 0;
+    }
+    // get list featured product
+    public List<Product> getFeaturedProducts() {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                "FROM Products p " +
+                "INNER JOIN Brands b ON p.brand_id = b.brand_id " +
+                "LIMIT 10";
+
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Product product = new Product(
+                        cursor.getInt(0), // id
+                        cursor.getString(1), // name
+                        cursor.getInt(2), // base_price
+                        cursor.getString(3), // brand_name
+                        "" // image
+                );
+                productList.add(product);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return productList;
+    }
+
+
+    public List<Product> searchProducts(String keyword) {
+        List<Product> productList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                "FROM Products p " +
+                "INNER JOIN Brands b ON p.brand_id = b.brand_id " +
+                "WHERE p.name LIKE ? OR b.name LIKE ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{"%" + keyword + "%", "%" + keyword + "%"});
+        if (cursor.moveToFirst()) {
+            do {
+                productList.add(new Product(
+                        cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getString(3), ""
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return productList;
     }
 }
