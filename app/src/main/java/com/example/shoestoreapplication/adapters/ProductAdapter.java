@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.shoestoreapplication.ProductDetailFragment;
 import com.example.shoestoreapplication.R;
 import com.example.shoestoreapplication.models.Product;
 import java.text.DecimalFormat;
@@ -45,6 +46,17 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.tvPrice.setText(formatter.format(product.getPrice()) + "đ");
 
         holder.imgProduct.setImageResource(R.drawable.img_welcome_shoe);
+
+        holder.itemView.setOnClickListener(v -> {
+
+            androidx.appcompat.app.AppCompatActivity activity = (androidx.appcompat.app.AppCompatActivity) v.getContext();
+            ProductDetailFragment detailFragment = ProductDetailFragment.newInstance(product.getId());
+
+            activity.getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, detailFragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
     }
 
     @Override

@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.example.shoestoreapplication.models.CartItem;
+import com.example.shoestoreapplication.models.Order;
 import com.example.shoestoreapplication.models.Product;
 
 import java.io.BufferedReader;
@@ -329,5 +331,168 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return productList;
+    }
+
+
+    public int getOrCreateCartId(int userId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int cartId = -1;
+
+        Cursor cursor = db.rawQuery("SELECT cart_id FROM Carts WHERE user_id = ?", new String[]{String.valueOf(userId)});
+        if (cursor.moveToFirst()) {
+            cartId = cursor.getInt(0);
+        }
+        cursor.close();
+
+        if (cartId == -1) {
+            ContentValues values = new ContentValues();
+            values.put("user_id", userId);
+            cartId = (int) db.insert("Carts", null, values);
+        }
+        return cartId;
+    }
+
+    public boolean addToCart(int cartId, int variantId, int quantity) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+
+        Cursor cursor = db.rawQuery("SELECT cart_item_id, quantity FROM Cart_Items WHERE cart_id = ? AND variant_id = ?",
+                new String[]{String.valueOf(cartId), String.valueOf(variantId)});
+
+        if (cursor.moveToFirst()) {
+
+            int currentQty = cursor.getInt(1);
+            ContentValues values = new ContentValues();
+            values.put("quantity", currentQty + quantity);
+            int rows = db.update("Cart_Items", values, "cart_item_id = ?", new String[]{String.valueOf(cursor.getInt(0))});
+            cursor.close();
+            return rows > 0;
+        } else {
+
+            cursor.close();
+            ContentValues values = new ContentValues();
+            values.put("cart_id", cartId);
+            values.put("variant_id", variantId);
+            values.put("quantity", quantity);
+            return db.insert("Cart_Items", null, values) > 0;
+        }
+    }
+
+
+    public List<CartItem> getCartItems(int cartId) {
+        List<CartItem> cartItems = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT ci.cart_item_id, p.name, pv.size, pv.price, ci.quantity " +
+                "FROM Cart_Items ci " +
+                "INNER JOIN Product_Variants pv ON ci.variant_id = pv.variant_id " +
+                "INNER JOIN Products p ON pv.product_id = p.product_id " +
+                "WHERE ci.cart_id = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(cartId)});
+        if (cursor.moveToFirst()) {
+            do {
+                cartItems.add(new CartItem(
+                        cursor.getInt(0),
+                        cursor.getString(1),
+                        cursor.getString(2),
+                        cursor.getInt(3),
+                        cursor.getInt(4)
+                ));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return cartItems;
+    }
+
+
+    public void updateCartItemQuantity(int cartItemId, int newQuantity) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("quantity", newQuantity);
+        db.update("Cart_Items", values, "cart_item_id = ?", new String[]{String.valueOf(cartItemId)});
+    }
+    public Cursor getProductDetail(int productId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT p.name, p.base_price, p.description, b.name AS brand_name " +
+                "FROM Products p " +
+                "INNER JOIN Brands b ON p.brand_id = b.brand_id " +
+                "WHERE p.product_id = ?";
+        return db.rawQuery(query, new String[]{String.valueOf(productId)});
+    }
+
+
+    public int getDefaultVariantId(int productId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int variantId = -1;
+        Cursor cursor = db.rawQuery("SELECT variant_id FROM Product_Variants WHERE product_id = ? LIMIT 1",
+                new String[]{String.valueOf(productId)});
+        if (cursor.moveToFirst()) {
+            variantId = cursor.getInt(0);
+        }
+        cursor.close();
+        return variantId;
+    }
+    public long placeOrder(int userId, int cartId, String name, String phone, String address, String paymentMethod, int total) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        long orderId = -1;
+
+        try {
+            String orderCode = "KKS-" + System.currentTimeMillis() % 1000000;
+            String dbPaymentMethod = paymentMethod.equalsIgnoreCase("COD") ? "cod" : "vnpay";
+
+            ContentValues orderValues = new ContentValues();
+            orderValues.put("user_id", userId);
+            orderValues.put("order_code", orderCode);
+            orderValues.put("status", "pending");
+            orderValues.put("subtotal", total);
+            orderValues.put("shipping_fee", 0);
+            orderValues.put("total", total);
+            orderValues.put("recipient_name_snapshot", name);
+            orderValues.put("phone_snapshot", phone);
+            orderValues.put("address_text_snapshot", address);
+
+            orderId = db.insert("Orders", null, orderValues);
+
+            if (orderId != -1) {
+                String insertItemsQuery = "INSERT INTO Order_Items (order_id, variant_id, product_name_snapshot, variant_size_snapshot, variant_color_snapshot, quantity, price_snapshot) " +
+                        "SELECT ?, ci.variant_id, p.name, pv.size, pv.color, ci.quantity, pv.price " +
+                        "FROM Cart_Items ci " +
+                        "JOIN Product_Variants pv ON ci.variant_id = pv.variant_id " +
+                        "JOIN Products p ON pv.product_id = p.product_id " +
+                        "WHERE ci.cart_id = ?";
+                db.execSQL(insertItemsQuery, new Object[]{orderId, cartId});
+
+                ContentValues paymentValues = new ContentValues();
+                paymentValues.put("order_id", orderId);
+                paymentValues.put("method", dbPaymentMethod);
+                paymentValues.put("status", "pending");
+                db.insert("Payment", null, paymentValues);
+
+                db.delete("Cart_Items", "cart_id = ?", new String[]{String.valueOf(cartId)});
+                db.setTransactionSuccessful();
+            }
+        } catch (Exception e) {
+            Log.e("Checkout_Bug", "Lỗi chi tiết khi đặt hàng: ", e);
+            orderId = -1;
+        } finally {
+            db.endTransaction();
+        }
+
+        return orderId;
+    }
+
+    public List<Order> getOrderHistory(int userId) {
+        List<Order> orders = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT order_id, created_at, total, status FROM Orders WHERE user_id = ? ORDER BY order_id DESC", new String[]{String.valueOf(userId)});
+        if (cursor.moveToFirst()) {
+            do {
+                orders.add(new Order(cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getString(3)));
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return orders;
     }
 }
