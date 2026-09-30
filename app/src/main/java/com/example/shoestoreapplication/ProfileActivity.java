@@ -25,19 +25,20 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView tvHeaderName, tvHeaderEmail;
     private EditText edtFullName, edtEmail, edtPhone, edtOldPassword, edtNewPassword;
     private Button btnSave;
+    private Button btnLogout;
+    private Button btnGoToOrderHistory;
 
     private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
     private int currentUserId;
     private String selectedAvatarUri = null;
-    private Button btnLogout;
+
     private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
                     if (imageUri != null) {
-
                         getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         selectedAvatarUri = imageUri.toString();
                         imgAvatar.setImageURI(imageUri);
@@ -74,6 +75,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         btnSave = findViewById(R.id.btn_save);
         btnLogout = findViewById(R.id.btn_logout);
+        btnGoToOrderHistory = findViewById(R.id.btn_go_to_order_history);
     }
 
     private void loadUserData() {
@@ -84,20 +86,18 @@ public class ProfileActivity extends AppCompatActivity {
             String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
             String avatarUrl = cursor.getString(cursor.getColumnIndexOrThrow("avatar_url"));
 
-
             tvHeaderName.setText(fullName);
             tvHeaderEmail.setText(email);
             edtFullName.setText(fullName);
             edtEmail.setText(email);
             edtPhone.setText(phone);
 
-
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 try {
                     imgAvatar.setImageURI(Uri.parse(avatarUrl));
                     selectedAvatarUri = avatarUrl;
                 } catch (Exception e) {
-                    imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder); // Fallback icon
+                    imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
                 }
             }
             cursor.close();
@@ -114,17 +114,21 @@ public class ProfileActivity extends AppCompatActivity {
             pickImageLauncher.launch(intent);
         });
 
-
         btnSave.setOnClickListener(v -> handleSaveProfile());
+
         btnLogout.setOnClickListener(v -> {
-
             sessionManager.logout();
-
-
             Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
+        });
+
+        btnGoToOrderHistory.setOnClickListener(v -> {
+            getSupportFragmentManager().beginTransaction()
+                    .add(android.R.id.content, new OrderHistoryFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
     }
 
@@ -139,9 +143,7 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-
         boolean isUpdated = dbHelper.updateUserProfile(currentUserId, newName, newPhone, selectedAvatarUri);
-
 
         if (!newPass.isEmpty()) {
             if (oldPass.isEmpty()) {
