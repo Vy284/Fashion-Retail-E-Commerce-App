@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,21 +23,22 @@ import com.example.shoestoreapplication.models.CartItem;
 import com.example.shoestoreapplication.utils.SessionManager;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CheckoutFragment extends Fragment {
 
     private RecyclerView rvCheckoutItems;
     private EditText edtName, edtPhone, edtAddress;
-    private RadioButton rbCod;
+    private RadioGroup rgPayment;
     private TextView tvSubtotal, tvTotal;
     private Button btnPlaceOrder;
     private ImageButton btnBack;
 
     private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
-    private int cartId;
-    private int totalAmount = 0; // Đưa về 0 để tính toán động
+    private int cartId = -1;
+    private int totalAmount = 0;
 
     @Nullable
     @Override
@@ -46,13 +47,17 @@ public class CheckoutFragment extends Fragment {
 
         dbHelper = new DatabaseHelper(requireContext());
         sessionManager = new SessionManager(requireContext());
-        cartId = dbHelper.getOrCreateCartId(sessionManager.getUserId());
+
+        int userId = sessionManager.getUserId();
+        if (userId != -1) {
+            cartId = dbHelper.getOrCreateCartId(userId);
+        }
 
         rvCheckoutItems = view.findViewById(R.id.rv_checkout_items);
         edtName = view.findViewById(R.id.edt_receiver_name);
         edtPhone = view.findViewById(R.id.edt_receiver_phone);
         edtAddress = view.findViewById(R.id.edt_receiver_address);
-        rbCod = view.findViewById(R.id.rb_cod);
+        rgPayment = view.findViewById(R.id.rg_payment);
         tvSubtotal = view.findViewById(R.id.tv_checkout_subtotal);
         tvTotal = view.findViewById(R.id.tv_checkout_total);
         btnPlaceOrder = view.findViewById(R.id.btn_place_order);
@@ -67,11 +72,12 @@ public class CheckoutFragment extends Fragment {
     }
 
     private void loadCartData() {
-        List<CartItem> items = dbHelper.getCartItems(cartId);
-
         rvCheckoutItems.setLayoutManager(new LinearLayoutManager(requireContext()));
-        CheckoutAdapter adapter = new CheckoutAdapter(items);
-        rvCheckoutItems.setAdapter(adapter);
+
+        List<CartItem> items = cartId == -1
+                ? new ArrayList<>()
+                : dbHelper.getCartItems(cartId);
+        rvCheckoutItems.setAdapter(new CheckoutAdapter(items));
 
         totalAmount = 0;
         for (CartItem item : items) {
@@ -85,15 +91,26 @@ public class CheckoutFragment extends Fragment {
     }
 
     private void processOrder() {
+        if (cartId == -1) {
+            Toast.makeText(requireContext(), "Vui lòng đăng nhập để đặt hàng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String name = edtName.getText().toString().trim();
         String phone = edtPhone.getText().toString().trim();
         String address = edtAddress.getText().toString().trim();
-        String paymentMethod = rbCod.isChecked() ? "COD" : "Transfer";
 
         if (name.isEmpty() || phone.isEmpty() || address.isEmpty()) {
             Toast.makeText(requireContext(), "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        int checkedId = rgPayment.getCheckedRadioButtonId();
+        if (checkedId == -1) {
+            Toast.makeText(requireContext(), "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String paymentMethod = (checkedId == R.id.rb_cod) ? "COD" : "Transfer";
 
         if (totalAmount <= 0) {
             Toast.makeText(requireContext(), "Giỏ hàng đang trống!", Toast.LENGTH_SHORT).show();
@@ -107,7 +124,12 @@ public class CheckoutFragment extends Fragment {
                     .replace(R.id.fragment_container, OrderSuccessFragment.newInstance(orderId))
                     .commit();
         } else {
-            Toast.makeText(requireContext(), "Lỗi đặt hàng", Toast.LENGTH_SHORT).show();
+            // Đặt hàng thất bại: sang màn thất bại, bấm "Thử lại" sẽ quay về màn này
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container,
+                            OrderFailedFragment.newInstance(name, phone, address))
+                    .addToBackStack(null)
+                    .commit();
         }
     }
 }

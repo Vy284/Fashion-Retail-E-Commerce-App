@@ -7,11 +7,9 @@
     android:background="#FAFAFA"
     android:orientation="vertical">
 
-    <!-- ================= PHẦN NỘI DUNG CUỘN TRANG CHỦ ================= -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
         android:overScrollMode="never"
         android:scrollbars="none">
 
@@ -29,7 +27,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp">
 
-                <!-- Tên Cửa Hàng -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -55,7 +52,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Nút Thông Báo & Avatar -->
                 <LinearLayout
                     android:id="@+id/layout_header_right"
                     android:layout_width="wrap_content"
@@ -95,7 +91,7 @@
 
             </RelativeLayout>
 
-            <!-- 2. SEARCH BAR -->
+            <!-- 2. SEARCH BAR (bấm vào là qua màn Category) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -118,6 +114,10 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="@null"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
                     android:hint="Tìm kiếm giày, thương hiệu..."
                     android:imeOptions="actionSearch"
                     android:inputType="text"
@@ -152,7 +152,7 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="#111111"
+                    android:background="#000000"
                     android:padding="20dp">
 
                     <LinearLayout
@@ -198,7 +198,7 @@
                         android:layout_centerVertical="true"
                         android:contentDescription="Ảnh sản phẩm banner"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/img_welcome_shoe" />
+                        android:src="@drawable/banner_shoe" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
@@ -292,9 +292,10 @@
                 android:id="@+id/rv_featured_products"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

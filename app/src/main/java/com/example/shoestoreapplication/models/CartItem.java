@@ -6,6 +6,7 @@ public class CartItem {
     private String size;
     private int price;
     private int quantity;
+    private String imageUrl = "";
 
     public CartItem(int cartItemId, String productName, String size, int price, int quantity) {
         this.cartItemId = cartItemId;
@@ -21,4 +22,7 @@ public class CartItem {
     public int getPrice() { return price; }
     public int getQuantity() { return quantity; }
     public void setQuantity(int quantity) { this.quantity = quantity; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 }

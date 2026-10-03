@@ -21,12 +21,13 @@ import java.util.List;
 import java.util.Locale;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import com.example.shoestoreapplication.models.ProductVariant;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "shoes_retail.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String SQL_FILE = "database/shoes_retail_ecommerce_schema_seed.sql";
 
     private final Context context;
@@ -292,7 +293,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(1),
                         cursor.getInt(2),
                         cursor.getString(3),
-                        ""
+                        getFirstImage(cursor.getInt(0))
                 );
                 productList.add(product);
             } while (cursor.moveToNext());
@@ -314,7 +315,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 productList.add(new Product(
-                        cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getString(3), ""
+                        cursor.getInt(0), cursor.getString(1), cursor.getInt(2), cursor.getString(3),
+                        getFirstImage(cursor.getInt(0))
                 ));
             } while (cursor.moveToNext());
         }
@@ -368,29 +370,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    // ĐÃ SỬA: lấy thêm ảnh chính của sản phẩm cho từng món trong giỏ / thanh toán
     public List<CartItem> getCartItems(int cartId) {
         List<CartItem> cartItems = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        String query = "SELECT ci.cart_item_id, p.name, pv.size, pv.price, ci.quantity " +
+        String query = "SELECT ci.cart_item_id, p.name, pv.size, pv.price, ci.quantity, " +
+                "(SELECT pi.image_url FROM Product_Images pi " +
+                " WHERE pi.product_id = p.product_id " +
+                " ORDER BY pi.sort_order, pi.image_id LIMIT 1) AS image_url " +
                 "FROM Cart_Items ci " +
                 "INNER JOIN Product_Variants pv ON ci.variant_id = pv.variant_id " +
                 "INNER JOIN Products p ON pv.product_id = p.product_id " +
                 "WHERE ci.cart_id = ?";
 
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(cartId)});
-        if (cursor.moveToFirst()) {
-            do {
-                cartItems.add(new CartItem(
+        try (Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(cartId)})) {
+            while (cursor.moveToNext()) {
+                CartItem item = new CartItem(
                         cursor.getInt(0),
                         cursor.getString(1),
                         cursor.getString(2),
                         cursor.getInt(3),
                         cursor.getInt(4)
-                ));
-            } while (cursor.moveToNext());
+                );
+                item.setImageUrl(cursor.isNull(5) ? "" : cursor.getString(5));
+                cartItems.add(item);
+            }
         }
-        cursor.close();
         return cartItems;
     }
 
@@ -422,12 +428,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return variantId;
     }
+
+    // ==========================================================
+    // ============ HÀM ĐÃ SỬA: kiểm tra + trừ tồn kho ==========
+    // ==========================================================
     public long placeOrder(int userId, int cartId, String name, String phone, String address, String paymentMethod, int total) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         long orderId = -1;
 
         try {
+            // ===== 1. KIỂM TRA TỒN KHO: có món nào mua nhiều hơn số còn lại không =====
+            try (Cursor c = db.rawQuery(
+                    "SELECT p.name, pv.size, pv.stock_quantity, ci.quantity " +
+                            "FROM Cart_Items ci " +
+                            "JOIN Product_Variants pv ON ci.variant_id = pv.variant_id " +
+                            "JOIN Products p ON pv.product_id = p.product_id " +
+                            "WHERE ci.cart_id = ? AND ci.quantity > pv.stock_quantity",
+                    new String[]{String.valueOf(cartId)})) {
+                if (c.moveToFirst()) {
+                    Log.w("Checkout_Bug", "Không đủ hàng: " + c.getString(0)
+                            + " size " + c.getString(1)
+                            + " (còn " + c.getInt(2) + ", cần " + c.getInt(3) + ")");
+                    return -1; // finally vẫn chạy endTransaction() -> rollback
+                }
+            }
+
             String orderCode = "KKS-" + System.currentTimeMillis() % 1000000;
             String dbPaymentMethod = paymentMethod.equalsIgnoreCase("COD") ? "cod" : "vnpay";
 
@@ -453,12 +479,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "WHERE ci.cart_id = ?";
                 db.execSQL(insertItemsQuery, new Object[]{orderId, cartId});
 
+                // ===== 2. TRỪ KHO THEO SỐ LƯỢNG TRONG GIỎ =====
+                db.execSQL(
+                        "UPDATE Product_Variants SET stock_quantity = stock_quantity - " +
+                                "(SELECT ci.quantity FROM Cart_Items ci " +
+                                " WHERE ci.cart_id = ? AND ci.variant_id = Product_Variants.variant_id) " +
+                                "WHERE variant_id IN (SELECT variant_id FROM Cart_Items WHERE cart_id = ?)",
+                        new Object[]{cartId, cartId});
+
                 ContentValues paymentValues = new ContentValues();
                 paymentValues.put("order_id", orderId);
                 paymentValues.put("method", dbPaymentMethod);
                 paymentValues.put("status", "pending");
                 db.insert("Payment", null, paymentValues);
 
+                // Tạo thông báo đặt hàng
+                ContentValues notifValues = new ContentValues();
+                notifValues.put(COLUMN_NOTIF_USER_ID, userId);
+                notifValues.put(COLUMN_NOTIF_ORDER_ID, orderId);
+                notifValues.put(COLUMN_NOTIF_TITLE, "Đặt hàng thành công");
+                notifValues.put(COLUMN_NOTIF_MESSAGE,
+                        "Cảm ơn bạn đã đặt hàng! Đơn hàng #" + orderCode + " của bạn đang được xử lý.");
+                notifValues.put(COLUMN_NOTIF_IS_READ, 0);
+                db.insert(TABLE_NOTIFICATIONS, null, notifValues);
+
+                // ===== 3. Xóa giỏ hàng SAU khi đã trừ kho (thứ tự này quan trọng) =====
                 db.delete("Cart_Items", "cart_id = ?", new String[]{String.valueOf(cartId)});
                 db.setTransactionSuccessful();
             }
@@ -483,5 +528,288 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return orders;
+    }
+
+    // ==========================================================
+    // ===================== PHẦN THÊM MỚI ======================
+    // ==========================================================
+
+    // ---------- Hằng số sắp xếp ----------
+    public static final int SORT_NEWEST = 0;
+    public static final int SORT_PRICE_ASC = 1;
+    public static final int SORT_PRICE_DESC = 2;
+    public static final int SORT_NAME_ASC = 3;
+
+    // Đọc Cursor thành List<Product> (cột: 0=product_id, 1=name, 2=base_price, 3=brand_name)
+    private List<Product> readProducts(Cursor cursor) {
+        List<Product> list = new ArrayList<>();
+        try (Cursor c = cursor) {
+            while (c.moveToNext()) {
+                list.add(new Product(c.getInt(0), c.getString(1), c.getInt(2), c.getString(3),
+                        getFirstImage(c.getInt(0))));
+            }
+        }
+        return list;
+    }
+
+    private void appendSort(StringBuilder sql, int sortType) {
+        switch (sortType) {
+            case SORT_PRICE_ASC:
+                sql.append(" ORDER BY p.base_price ASC");
+                break;
+            case SORT_PRICE_DESC:
+                sql.append(" ORDER BY p.base_price DESC");
+                break;
+            case SORT_NAME_ASC:
+                sql.append(" ORDER BY p.name COLLATE NOCASE ASC");
+                break;
+            default:
+                sql.append(" ORDER BY p.created_at DESC, p.product_id DESC");
+        }
+    }
+
+    // ---------- Dùng cho HomeFragment ----------
+    // gender = "all" | "men" | "women" | "unisex" | "kids"  (khớp cột Products.gender_type)
+    // brands = danh sách TÊN thương hiệu (rỗng/null = không lọc)
+    // sort   = "default" | "price_asc" | "price_desc"
+    public List<Product> filterProducts(String keyword, String gender, List<String> brands, String sort) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder sql = new StringBuilder(
+                "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                        "FROM Products p INNER JOIN Brands b ON p.brand_id = b.brand_id WHERE 1=1");
+        List<String> args = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (p.name LIKE ? OR b.name LIKE ?)");
+            String k = "%" + keyword.trim() + "%";
+            args.add(k);
+            args.add(k);
+        }
+        if (gender != null && !gender.equals("all")) {
+            sql.append(" AND p.gender_type = ?");
+            args.add(gender);
+        }
+        if (brands != null && !brands.isEmpty()) {
+            sql.append(" AND b.name IN (");
+            for (int i = 0; i < brands.size(); i++) {
+                sql.append(i == 0 ? "?" : ",?");
+                args.add(brands.get(i));
+            }
+            sql.append(")");
+        }
+        if ("price_asc".equals(sort)) {
+            sql.append(" ORDER BY p.base_price ASC");
+        } else if ("price_desc".equals(sort)) {
+            sql.append(" ORDER BY p.base_price DESC");
+        } else {
+            sql.append(" ORDER BY p.product_id ASC");
+        }
+        return readProducts(db.rawQuery(sql.toString(), args.toArray(new String[0])));
+    }
+
+    // Tên tất cả thương hiệu (cho dialog lọc thương hiệu ở Home)
+    public List<String> getAllBrands() {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery("SELECT name FROM Brands ORDER BY name", null)) {
+            while (c.moveToNext()) {
+                list.add(c.getString(0));
+            }
+        }
+        return list;
+    }
+
+    // ---------- Dùng cho màn Category: lọc theo danh mục / thương hiệu / khoảng giá ----------
+    // categoryId/brandId/minPrice/maxPrice <= 0 = không lọc
+    public List<Product> filterProducts(String keyword, int categoryId, int brandId,
+                                        int minPrice, int maxPrice, int sortType) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        StringBuilder sql = new StringBuilder(
+                "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                        "FROM Products p INNER JOIN Brands b ON p.brand_id = b.brand_id WHERE 1=1");
+        List<String> args = new ArrayList<>();
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (p.name LIKE ? OR b.name LIKE ?)");
+            String k = "%" + keyword.trim() + "%";
+            args.add(k);
+            args.add(k);
+        }
+        if (categoryId > 0) {
+            sql.append(" AND p.category_id = ?");
+            args.add(String.valueOf(categoryId));
+        }
+        if (brandId > 0) {
+            sql.append(" AND p.brand_id = ?");
+            args.add(String.valueOf(brandId));
+        }
+        if (minPrice > 0) {
+            sql.append(" AND p.base_price >= ?");
+            args.add(String.valueOf(minPrice));
+        }
+        if (maxPrice > 0) {
+            sql.append(" AND p.base_price <= ?");
+            args.add(String.valueOf(maxPrice));
+        }
+        appendSort(sql, sortType);
+        return readProducts(db.rawQuery(sql.toString(), args.toArray(new String[0])));
+    }
+
+    // Danh sách {id, name} để đổ vào dialog/chip lọc
+    public List<String[]> getCategories() {
+        return readIdName("SELECT category_id, name FROM Categories ORDER BY name");
+    }
+
+    public List<String[]> getBrands() {
+        return readIdName("SELECT brand_id, name FROM Brands ORDER BY name");
+    }
+
+    private List<String[]> readIdName(String sql) {
+        List<String[]> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery(sql, null)) {
+            while (c.moveToNext()) {
+                list.add(new String[]{String.valueOf(c.getInt(0)), c.getString(1)});
+            }
+        }
+        return list;
+    }
+
+    // ---------- Wishlist ----------
+    public boolean isInWishlist(int userId, int productId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery(
+                "SELECT 1 FROM Wishlists WHERE user_id = ? AND product_id = ? LIMIT 1",
+                new String[]{String.valueOf(userId), String.valueOf(productId)})) {
+            return c.moveToFirst();
+        }
+    }
+
+    // Trả về true nếu SAU khi bấm thì sản phẩm đang nằm trong wishlist (để đổi icon tim)
+    public boolean toggleWishlist(int userId, int productId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        if (isInWishlist(userId, productId)) {
+            db.delete("Wishlists", "user_id = ? AND product_id = ?",
+                    new String[]{String.valueOf(userId), String.valueOf(productId)});
+            return false;
+        }
+        ContentValues values = new ContentValues();
+        values.put("user_id", userId);
+        values.put("product_id", productId);
+        return db.insert("Wishlists", null, values) != -1;
+    }
+
+    public List<Product> getWishlistProducts(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT p.product_id, p.name, p.base_price, b.name AS brand_name " +
+                "FROM Wishlists w " +
+                "INNER JOIN Products p ON w.product_id = p.product_id " +
+                "INNER JOIN Brands b ON p.brand_id = b.brand_id " +
+                "WHERE w.user_id = ? ORDER BY w.added_at DESC, w.wishlist_id DESC";
+        return readProducts(db.rawQuery(sql, new String[]{String.valueOf(userId)}));
+    }
+
+    // ---------- Thông báo: đánh dấu tất cả đã đọc ----------
+    public int markAllNotificationsAsRead(int userId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NOTIF_IS_READ, 1);
+        return db.update(TABLE_NOTIFICATIONS, values,
+                COLUMN_NOTIF_USER_ID + " = ?", new String[]{String.valueOf(userId)});
+    }
+
+    // ---------- Chi tiết sản phẩm ----------
+    // Tên ảnh của sản phẩm, theo thứ tự sort_order (ảnh đầu = ảnh chính)
+    public List<String> getProductImages(int productId) {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery(
+                "SELECT image_url FROM Product_Images WHERE product_id = ? ORDER BY sort_order, image_id",
+                new String[]{String.valueOf(productId)})) {
+            while (c.moveToNext()) {
+                list.add(c.getString(0));
+            }
+        }
+        return list;
+    }
+
+    // Tất cả biến thể (màu + size + tồn kho) của sản phẩm
+    public List<ProductVariant> getVariants(int productId) {
+        List<ProductVariant> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery(
+                "SELECT variant_id, color, size, stock_quantity, price FROM Product_Variants " +
+                        "WHERE product_id = ? ORDER BY variant_id",
+                new String[]{String.valueOf(productId)})) {
+            while (c.moveToNext()) {
+                list.add(new ProductVariant(c.getInt(0), c.getString(1), c.getString(2),
+                        c.getInt(3), c.getInt(4)));
+            }
+        }
+        return list;
+    }
+
+    // Thông tin chung của 1 đơn
+    public Cursor getOrderSummary(int orderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(
+                "SELECT order_code, status, total, created_at, " +
+                        "recipient_name_snapshot, phone_snapshot, address_text_snapshot " +
+                        "FROM Orders WHERE order_id = ?",
+                new String[]{String.valueOf(orderId)});
+    }
+
+    // Các sản phẩm trong đơn
+    public Cursor getOrderItems(int orderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(
+                "SELECT product_name_snapshot, variant_size_snapshot, variant_color_snapshot, " +
+                        "quantity, price_snapshot FROM Order_Items WHERE order_id = ?",
+                new String[]{String.valueOf(orderId)});
+    }
+
+    // Tên ảnh đầu tiên (ảnh chính) của sản phẩm
+    public String getFirstImage(int productId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery(
+                "SELECT image_url FROM Product_Images WHERE product_id = ? " +
+                        "ORDER BY sort_order, image_id LIMIT 1",
+                new String[]{String.valueOf(productId)})) {
+            return c.moveToFirst() ? c.getString(0) : "";
+        }
+    }
+
+    // Ảnh chính của sản phẩm, tra theo tên (dùng cho giỏ hàng / thanh toán / lịch sử đơn)
+    public String getImageByProductName(String productName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        try (Cursor c = db.rawQuery(
+                "SELECT pi.image_url FROM Product_Images pi " +
+                        "JOIN Products p ON pi.product_id = p.product_id " +
+                        "WHERE p.name = ? ORDER BY pi.sort_order, pi.image_id LIMIT 1",
+                new String[]{productName})) {
+            return c.moveToFirst() ? c.getString(0) : "";
+        }
+    }
+
+    // Món đầu tiên của đơn: {tên, ảnh, số lượng, số món khác} (dùng cho lịch sử đơn hàng)
+    public String[] getOrderPreview(int orderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String name = "";
+        String qty = "0";
+        int rows = 0;
+        try (Cursor c = db.rawQuery(
+                "SELECT product_name_snapshot, quantity FROM Order_Items " +
+                        "WHERE order_id = ? ORDER BY order_item_id",
+                new String[]{String.valueOf(orderId)})) {
+            while (c.moveToNext()) {
+                if (rows == 0) {
+                    name = c.getString(0);
+                    qty = String.valueOf(c.getInt(1));
+                }
+                rows++;
+            }
+        }
+        String image = name.isEmpty() ? "" : getImageByProductName(name);
+        return new String[]{name, image, qty, String.valueOf(Math.max(rows - 1, 0))};
     }
 }

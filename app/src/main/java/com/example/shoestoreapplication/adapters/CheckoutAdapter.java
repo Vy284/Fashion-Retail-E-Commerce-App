@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.R;
 import com.example.shoestoreapplication.models.CartItem;
+import com.example.shoestoreapplication.utils.ImageUtils;
+
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -38,6 +40,9 @@ public class CheckoutAdapter extends RecyclerView.Adapter<CheckoutAdapter.Checko
         DecimalFormat formatter = new DecimalFormat("#,###");
         int lineTotal = item.getPrice() * item.getQuantity();
         holder.tvPrice.setText(formatter.format(lineTotal) + "đ");
+
+        // Hiển thị ảnh sản phẩm
+        ImageUtils.load(holder.imgProduct, item.getImageUrl());
     }
 
     @Override

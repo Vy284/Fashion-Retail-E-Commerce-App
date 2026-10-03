@@ -1,14 +1,16 @@
 package com.example.shoestoreapplication;
 
-import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
+import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,33 +24,30 @@ import com.example.shoestoreapplication.models.Product;
 import com.example.shoestoreapplication.utils.Nav;
 import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+public class CategoryFragment extends Fragment {
 
     private DatabaseHelper db;
     private SessionManager session;
     private ProductAdapter adapter;
 
     private EditText edtSearch;
-    private MaterialButton btnMen, btnWomen;
+    private TextView tvCount;
 
-    // Trạng thái lọc hiện tại
-    private String gender = "all";                 // "all" | "men" | "women"
-    private String sort = "default";               // "default" | "price_asc" | "price_desc"
+    private String gender = "men";      // men | women | unisex | kids
+    private String sort = "default";
     private final List<String> selectedBrands = new ArrayList<>();
-    private boolean showAll = false;               // false = chỉ hiện 10 sản phẩm nổi bật
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        return inflater.inflate(R.layout.fragment_category, container, false);
     }
 
     @Override
@@ -58,20 +57,18 @@ public class HomeFragment extends Fragment {
         session = new SessionManager(requireContext());
 
         edtSearch = view.findViewById(R.id.edt_search);
-        btnMen = view.findViewById(R.id.btn_category_men);
-        btnWomen = view.findViewById(R.id.btn_category_women);
-        MaterialButton btnSeeAll = view.findViewById(R.id.btn_see_all);
-        View btnFilter = view.findViewById(R.id.btn_filter);
-        View btnNotification = view.findViewById(R.id.btn_notification);
-        View imgAvatar = view.findViewById(R.id.img_avatar);
+        tvCount = view.findViewById(R.id.tv_result_count);
+        ChipGroup chipGroup = view.findViewById(R.id.chip_group_category);
 
-        RecyclerView rv = view.findViewById(R.id.rv_featured_products);
+        view.findViewById(R.id.btn_back).setOnClickListener(v ->
+                requireActivity().getOnBackPressedDispatcher().onBackPressed());
+
+        RecyclerView rv = view.findViewById(R.id.rv_category_products);
         rv.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         adapter = new ProductAdapter(p ->
                 Nav.open(this, ProductDetailFragment.newInstance(p.getId())));
         rv.setAdapter(adapter);
 
-        // Nút tim wishlist (chưa đăng nhập thì bấm không có tác dụng)
         adapter.setWishlistHandler(new ProductAdapter.WishlistHandler() {
             @Override
             public boolean isWishlisted(Product p) {
@@ -86,63 +83,42 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Search bar: bấm vào là chuyển sang màn Category
-        edtSearch.setFocusable(false);
-        edtSearch.setClickable(true);
-        edtSearch.setOnClickListener(v -> Nav.open(this, new CategoryFragment()));
-
-        // Giày nam / nữ: bấm lần nữa để bỏ chọn
-        btnMen.setOnClickListener(v -> {
-            gender = "men".equals(gender) ? "all" : "men";
-            updateGenderButtons();
-            loadProducts();
-        });
-        btnWomen.setOnClickListener(v -> {
-            gender = "women".equals(gender) ? "all" : "women";
-            updateGenderButtons();
+        // Chọn Nam / Nữ / Unisex / Trẻ em
+        chipGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.chip_nam) gender = "men";
+            else if (checkedId == R.id.chip_nu) gender = "women";
+            else if (checkedId == R.id.chip_unisex) gender = "unisex";
+            else if (checkedId == R.id.chip_tre_em) gender = "kids";
             loadProducts();
         });
 
-        btnSeeAll.setOnClickListener(v -> {
-            showAll = true;
-            loadProducts();
+        // Tìm kiếm ngay khi gõ
+        edtSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) {}
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) {}
+            @Override public void afterTextChanged(Editable s) { loadProducts(); }
         });
 
-        // Nút lọc: mở bottom sheet
-        btnFilter.setOnClickListener(v -> showFilterSheet());
+        view.findViewById(R.id.btn_filter).setOnClickListener(v -> showFilterSheet());
 
-        btnNotification.setOnClickListener(v ->
-                Nav.open(this, new NotificationsFragment()));
+        // Mở sẵn bàn phím để gõ tìm kiếm
+        edtSearch.requestFocus();
+        edtSearch.post(() -> {
+            InputMethodManager imm = (InputMethodManager)
+                    requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.showSoftInput(edtSearch, InputMethodManager.SHOW_IMPLICIT);
+        });
 
-        imgAvatar.setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), ProfileActivity.class)));
-
-        updateGenderButtons();
         loadProducts();
     }
 
     private void loadProducts() {
-        List<Product> list = db.filterProducts("", gender, selectedBrands, sort);
-
-        boolean filtering = !"all".equals(gender) || !selectedBrands.isEmpty();
-        if (!showAll && !filtering && list.size() > 10) {
-            list = new ArrayList<>(list.subList(0, 10));
-        }
+        List<Product> list = db.filterProducts(
+                edtSearch.getText().toString(), gender, selectedBrands, sort);
         adapter.setItems(list);
+        tvCount.setText(list.size() + " sản phẩm tìm thấy");
     }
 
-    private void updateGenderButtons() {
-        styleGenderButton(btnMen, "men".equals(gender));
-        styleGenderButton(btnWomen, "women".equals(gender));
-    }
-
-    private void styleGenderButton(MaterialButton btn, boolean selected) {
-        btn.setBackgroundTintList(ColorStateList.valueOf(
-                Color.parseColor(selected ? "#FF5722" : "#F5F5F5")));
-        btn.setTextColor(Color.parseColor(selected ? "#FFFFFF" : "#111111"));
-    }
-
-    // ---------- Bộ lọc dạng Bottom Sheet ----------
     private void showFilterSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         View sheet = getLayoutInflater().inflate(R.layout.bottom_sheet_filter, null);
@@ -168,9 +144,9 @@ public class HomeFragment extends Fragment {
         });
 
         sheet.findViewById(R.id.btn_apply).setOnClickListener(v -> {
-            int checkedId = rgSort.getCheckedRadioButtonId();
-            if (checkedId == R.id.rb_price_low_high) sort = "price_asc";
-            else if (checkedId == R.id.rb_price_high_low) sort = "price_desc";
+            int id = rgSort.getCheckedRadioButtonId();
+            if (id == R.id.rb_price_low_high) sort = "price_asc";
+            else if (id == R.id.rb_price_high_low) sort = "price_desc";
             else sort = "default";
 
             selectedBrands.clear();
@@ -178,7 +154,6 @@ public class HomeFragment extends Fragment {
                 Chip chip = (Chip) chipGroup.getChildAt(i);
                 if (chip.isChecked()) selectedBrands.add(chip.getText().toString());
             }
-
             loadProducts();
             dialog.dismiss();
         });

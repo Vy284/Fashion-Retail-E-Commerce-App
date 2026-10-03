@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.shoestoreapplication.adapters.OrderAdapter;
 import com.example.shoestoreapplication.database.DatabaseHelper;
 import com.example.shoestoreapplication.models.Order;
+import com.example.shoestoreapplication.utils.Nav;
 import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.button.MaterialButton;
 
@@ -41,20 +42,26 @@ public class OrderHistoryFragment extends Fragment {
         layoutEmpty = view.findViewById(R.id.layout_empty_orders);
         btnShopNow = view.findViewById(R.id.btn_shop_now);
 
-        btnShopNow.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new HomeFragment())
-                    .commit();
-        });
+        // Khám phá ngay: quay về trang chủ (cùng cách mở màn như các màn khác)
+        btnShopNow.setOnClickListener(v -> Nav.open(this, new HomeFragment()));
 
+        rvOrders.setLayoutManager(new LinearLayoutManager(requireContext()));
         setupRecyclerView();
 
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (rvOrders != null) setupRecyclerView();
+    }
+
     private void setupRecyclerView() {
         int userId = sessionManager.getUserId();
-        List<Order> orderList = dbHelper.getOrderHistory(userId);
+
+        // Chưa đăng nhập: hiện màn trống, không truy vấn
+        List<Order> orderList = userId == -1 ? null : dbHelper.getOrderHistory(userId);
 
         if (orderList == null || orderList.isEmpty()) {
             rvOrders.setVisibility(View.GONE);
@@ -63,8 +70,8 @@ public class OrderHistoryFragment extends Fragment {
             rvOrders.setVisibility(View.VISIBLE);
             layoutEmpty.setVisibility(View.GONE);
 
-            rvOrders.setLayoutManager(new LinearLayoutManager(requireContext()));
-            OrderAdapter adapter = new OrderAdapter(orderList);
+            OrderAdapter adapter = new OrderAdapter(orderList, order ->
+                    Nav.open(this, OrderDetailFragment.newInstance(order.getOrderId())));
             rvOrders.setAdapter(adapter);
         }
     }

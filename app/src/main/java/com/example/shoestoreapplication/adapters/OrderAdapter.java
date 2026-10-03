@@ -10,16 +10,33 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.R;
+import com.example.shoestoreapplication.database.DatabaseHelper;
 import com.example.shoestoreapplication.models.Order;
+import com.example.shoestoreapplication.utils.ImageUtils;
 import java.text.DecimalFormat;
 import java.util.List;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
+    public interface OnDetailClickListener {
+        void onDetailClick(Order order);
+    }
+
     private List<Order> orderList;
+    private OnDetailClickListener detailListener;
+    private DatabaseHelper dbHelper;
 
     public OrderAdapter(List<Order> orderList) {
         this.orderList = orderList;
+    }
+
+    public OrderAdapter(List<Order> orderList, OnDetailClickListener listener) {
+        this.orderList = orderList;
+        this.detailListener = listener;
+    }
+
+    public void setOnDetailClickListener(OnDetailClickListener listener) {
+        this.detailListener = listener;
     }
 
     @NonNull
@@ -41,6 +58,28 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             DecimalFormat formatter = new DecimalFormat("#,###");
             holder.tvTotal.setText(formatter.format(order.getTotalAmount()) + "đ");
         }
+
+        // Món đầu tiên của đơn: tên, số lượng, ảnh
+        if (dbHelper == null) {
+            dbHelper = new DatabaseHelper(holder.itemView.getContext());
+        }
+        String[] preview = dbHelper.getOrderPreview(order.getOrderId());
+        int others = Integer.parseInt(preview[3]);
+
+        if (holder.tvProductName != null) holder.tvProductName.setText(preview[0]);
+        if (holder.tvProductQty != null) {
+            String qtyText = "SL: " + preview[2];
+            if (others > 0) qtyText += " • +" + others + " sản phẩm khác";
+            holder.tvProductQty.setText(qtyText);
+        }
+        if (holder.imgProduct != null) ImageUtils.load(holder.imgProduct, preview[1]);
+
+        // Bấm "Chi tiết" hoặc bấm cả thẻ đơn hàng đều mở màn chi tiết
+        View.OnClickListener open = v -> {
+            if (detailListener != null) detailListener.onDetailClick(order);
+        };
+        if (holder.btnDetail != null) holder.btnDetail.setOnClickListener(open);
+        holder.itemView.setOnClickListener(open);
     }
 
     @Override
