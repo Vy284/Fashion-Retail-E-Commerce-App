@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS Product_Variants;
 DROP TABLE IF EXISTS Products;
 DROP TABLE IF EXISTS Categories;
 DROP TABLE IF EXISTS Brands;
+DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Users;
 
 -- Enable foreign key constraints
@@ -29,6 +30,16 @@ CREATE TABLE Users (
     password_hash TEXT NOT NULL,
     avatar_url TEXT,
     created_at TEXT DEFAULT (datetime('now', 'localtime'))
+);
+
+-- 1.5 Cards Table
+CREATE TABLE Cards (
+    card_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    card_holder_name TEXT NOT NULL,
+    last_four_digits TEXT NOT NULL,
+    expiry_date TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
 -- 2. Brands Table
@@ -178,6 +189,9 @@ CREATE TABLE IF NOT EXISTS Notifications (
 -- SEED DATA MAU
 INSERT INTO Users (full_name, email, phone, password_hash, avatar_url) VALUES
 ('Phương Loan', 'loan@example.com', '0901234567', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'avatar_1');
+
+INSERT INTO Cards (user_id, card_holder_name, last_four_digits, expiry_date) VALUES
+(1, 'PHUONG LOAN', '4242', '12/27');
 
 INSERT INTO Brands (name, logo_url) VALUES
 ('Nike', 'brand_nike'),

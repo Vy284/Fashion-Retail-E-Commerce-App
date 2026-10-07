@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "shoes_retail.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String SQL_FILE = "database/shoes_retail_ecommerce_schema_seed.sql";
 
     private final Context context;
@@ -40,6 +40,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_NOTIF_MESSAGE = "message";
     public static final String COLUMN_NOTIF_IS_READ = "is_read";
     public static final String COLUMN_NOTIF_CREATED_AT = "created_at";
+
+    // Cards Table Constants
+    public static final String TABLE_CARDS = "Cards";
+    public static final String COLUMN_CARD_ID = "card_id";
+    public static final String COLUMN_CARD_USER_ID = "user_id";
+    public static final String COLUMN_CARD_HOLDER_NAME = "card_holder_name";
+    public static final String COLUMN_CARD_LAST_FOUR = "last_four_digits";
+    public static final String COLUMN_CARD_EXPIRY = "expiry_date";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -811,5 +819,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         String image = name.isEmpty() ? "" : getImageByProductName(name);
         return new String[]{name, image, qty, String.valueOf(Math.max(rows - 1, 0))};
+    }
+
+    // ---------- Cards ----------
+    public long addCard(int userId, String cardHolderName, String lastFourDigits, String expiryDate) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CARD_USER_ID, userId);
+        values.put(COLUMN_CARD_HOLDER_NAME, cardHolderName);
+        values.put(COLUMN_CARD_LAST_FOUR, lastFourDigits);
+        values.put(COLUMN_CARD_EXPIRY, expiryDate);
+        return db.insert(TABLE_CARDS, null, values);
+    }
+
+    public Cursor getCardsByUserId(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_CARDS +
+                " WHERE " + COLUMN_CARD_USER_ID + " = ?";
+        return db.rawQuery(query, new String[]{String.valueOf(userId)});
+    }
+
+    public boolean deleteCard(int cardId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_CARDS, COLUMN_CARD_ID + " = ?",
+                new String[]{String.valueOf(cardId)});
+        return rows > 0;
     }
 }
