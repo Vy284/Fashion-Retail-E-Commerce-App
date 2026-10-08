@@ -12,7 +12,7 @@
         android:layout_height="match_parent"
         android:contentDescription="Ảnh nền giày"
         android:scaleType="centerCrop"
-        android:src="@android:drawable/ic_menu_gallery" />
+        android:src="@drawable/welcome_bg" />
 
     <!-- 2. Lớp phủ tối nhẹ giúp chữ dễ đọc hơn -->
     <View

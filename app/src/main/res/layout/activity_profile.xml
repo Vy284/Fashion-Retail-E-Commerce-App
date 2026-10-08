@@ -239,19 +239,44 @@
                     android:textColor="#000000"
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
-
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_go_to_order_history"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="#EEEEEE"
+                android:text="Lịch Sử Mua Hàng Của Tôi"
+                android:textColor="#000000"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
             <!-- Nút Lưu Thay Đổi -->
             <Button
                 android:id="@+id/btn_save"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 android:backgroundTint="#111111"
                 android:text="Lưu Thay Đổi"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp" />
+
+            <!-- THÊM NÚT ĐĂNG XUẤT VÀO ĐÂY -->
+            <Button
+                android:id="@+id/btn_logout"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="24dp"
+                android:text="Đăng Xuất"
+                android:textColor="#FF0000"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:strokeColor="#FF0000" />
+
 
         </LinearLayout>
     </ScrollView>

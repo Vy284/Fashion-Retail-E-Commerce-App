@@ -10,15 +10,15 @@
     <!-- ================= 1. HEADER ================= -->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="56dp"
         android:background="#FFFFFF"
-        android:paddingHorizontal="20dp"
-        app:elevation="6dp">
+        android:paddingHorizontal="16dp"
+        app:elevation="4dp">
 
         <ImageButton
             android:id="@+id/btn_back"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Quay lại"
@@ -31,20 +31,20 @@
             android:layout_centerInParent="true"
             android:text="Chi Tiết Sản Phẩm"
             android:textColor="#000000"
-            android:textSize="26sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/btn_favorite"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="#F0F0F0"
             android:contentDescription="Yêu thích"
-            android:padding="14dp"
-            android:src="@android:drawable/btn_star_big_off"
-            app:tint="#FF5722" />
+            android:padding="10dp"
+            android:src="@android:drawable/btn_star_big_on"
+            app:tint="#BDBDBD"/>
     </RelativeLayout>
 
     <!-- ================= 2. PHẦN NỘI DUNG CUỘN ================= -->
@@ -59,18 +59,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="16dp">
 
             <!-- Ảnh chính sản phẩm -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="400dp"
-                android:layout_marginBottom="24dp"
+                android:layout_height="320dp"
+                android:layout_marginBottom="16dp"
                 app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="28dp"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeColor="#DDDDDD"
-                app:strokeWidth="1.5dp">
+                app:strokeWidth="1dp">
 
                 <ImageView
                     android:id="@+id/img_product_main"
@@ -79,56 +79,25 @@
                     android:contentDescription="Ảnh sản phẩm chính"
                     android:scaleType="centerCrop"
                     android:src="@android:drawable/ic_menu_gallery" />
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Ảnh thu nhỏ -->
             <LinearLayout
+                android:id="@+id/ll_thumbs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="20dp"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="horizontal" />
 
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="#DDDDDD"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery" />
-
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="#F0F0F0"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery" />
-
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="#F0F0F0"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery" />
-
-                <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:background="#F0F0F0"
-                    android:scaleType="centerCrop"
-                    android:src="@android:drawable/ic_menu_gallery" />
-            </LinearLayout>
-
-            <!-- Thương hiệu, Tên, Giá -->
+            <!-- Thương hiệu, Tên, Giá (Đã giảm size cho vừa mắt) -->
             <TextView
                 android:id="@+id/tv_product_brand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="6dp"
                 android:textColor="#FF5722"
-                android:textSize="20sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="JORDAN SNEAKER" />
 
@@ -136,9 +105,9 @@
                 android:id="@+id/tv_product_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
+                android:layout_marginBottom="8dp"
                 android:textColor="#111111"
-                android:textSize="36sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 tools:text="Air Jordan 1 'Chicago'" />
 
@@ -146,9 +115,9 @@
                 android:id="@+id/tv_product_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="20dp"
                 android:textColor="#111111"
-                android:textSize="34sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 tools:text="5.490.000đ" />
 
@@ -156,141 +125,67 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="10dp"
                 android:text="Chọn Màu Sắc"
                 android:textColor="#000000"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <LinearLayout
+                android:id="@+id/ll_colors"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
-                android:orientation="horizontal">
-
-                <View
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_marginEnd="20dp"
-                    android:background="#FF0000" />
-
-                <View
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_marginEnd="20dp"
-                    android:background="#000000" />
-
-                <View
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_marginEnd="20dp"
-                    android:background="#0000FF" />
-
-                <View
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:background="#888888" />
-            </LinearLayout>
+                android:layout_marginBottom="20dp"
+                android:orientation="horizontal" />
 
             <!-- Chọn kích cỡ -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:text="Chọn Kích Cỡ (US)"
+                android:layout_marginBottom="10dp"
+                android:text="Chọn Kích Cỡ"
                 android:textColor="#000000"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <LinearLayout
+            <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="69dp"
-                android:layout_marginBottom="32dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
 
-                <TextView
-                    android:layout_width="72dp"
-                    android:layout_height="64dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="#EEEEEE"
-                    android:gravity="center"
-                    android:text="38"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                <LinearLayout
+                    android:id="@+id/ll_sizes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
 
-                <TextView
-                    android:layout_width="72dp"
-                    android:layout_height="64dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="#EEEEEE"
-                    android:gravity="center"
-                    android:text="39"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="72dp"
-                    android:layout_height="64dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="#EEEEEE"
-                    android:gravity="center"
-                    android:text="40"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="72dp"
-                    android:layout_height="64dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="#111111"
-                    android:gravity="center"
-                    android:text="41"
-                    android:textColor="#FFFFFF"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="72dp"
-                    android:layout_height="64dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="#EEEEEE"
-                    android:gravity="center"
-                    android:text="42"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="72dp"
-                    android:layout_height="64dp"
-                    android:background="#EEEEEE"
-                    android:gravity="center"
-                    android:text="43"
-                    android:textColor="#000000"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tv_stock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
+                android:textColor="#757575"
+                android:textSize="14sp" />
 
             <!-- Mô tả sản phẩm -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="10dp"
                 android:text="Mô Tả Sản Phẩm"
                 android:textColor="#000000"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_product_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:lineSpacingExtra="12dp"
+                android:lineSpacingExtra="6dp"
                 android:textColor="#333333"
-                android:textSize="20sp"
+                android:textSize="14sp"
                 tools:text="Giày thể thao cao cấp chính hãng thiết kế trẻ trung, ôm chân, đế cao su chống trượt bền bỉ phù hợp cho mọi hoạt động dạo phố và thể thao." />
 
         </LinearLayout>
@@ -303,23 +198,23 @@
         android:background="#FFFFFF"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="24dp"
-        app:elevation="20dp">
+        android:padding="12dp"
+        app:elevation="12dp">
 
-        <!-- Bộ tăng giảm số lượng -->
+        <!-- Bộ tăng giảm số lượng (Giảm size cho gọn) -->
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="72dp"
-            android:layout_marginEnd="20dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="12dp"
             android:background="#F0F0F0"
             android:gravity="center"
             android:orientation="horizontal"
-            android:paddingHorizontal="12dp">
+            android:paddingHorizontal="4dp">
 
             <ImageButton
                 android:id="@+id/btn_decrease"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Giảm"
                 android:src="@drawable/ic_minus"
@@ -327,18 +222,18 @@
 
             <TextView
                 android:id="@+id/tv_quantity"
-                android:layout_width="60dp"
+                android:layout_width="40dp"
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="1"
                 android:textColor="#000000"
-                android:textSize="28sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
             <ImageButton
                 android:id="@+id/btn_increase"
-                android:layout_width="52dp"
-                android:layout_height="52dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Tăng"
                 android:src="@drawable/ic_plus"
@@ -349,18 +244,18 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_add_to_cart"
             android:layout_width="0dp"
-            android:layout_height="72dp"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:backgroundTint="#FF5722"
             android:text="Thêm Vào Giỏ Hàng"
             android:textColor="#FFFFFF"
-            android:textSize="22sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            app:cornerRadius="20dp"
+            app:cornerRadius="12dp"
             app:icon="@drawable/ic_cart"
             app:iconGravity="start"
-            app:iconPadding="12dp"
-            app:iconSize="32dp"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
             app:iconTint="#FFFFFF" />
     </LinearLayout>
 

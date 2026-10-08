@@ -7,7 +7,7 @@
     android:orientation="vertical"
     android:padding="20dp">
 
-    <!-- Thanh ngang nhỏ kéo mở (Indicator bar ở đầu Bottom Sheet) -->
+    <!-- Thanh ngang nhỏ kéo mở -->
     <View
         android:layout_width="40dp"
         android:layout_height="4dp"
@@ -25,6 +25,7 @@
         android:textStyle="bold" />
 
     <RadioGroup
+        android:id="@+id/rg_sort"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp">
@@ -72,7 +73,6 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <!-- Dùng ChipGroup để hiển thị danh sách hãng giày -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chip_group_brands"
         android:layout_width="match_parent"
@@ -81,17 +81,17 @@
         app:singleSelection="false">
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nike"
             android:textColor="#333333"
             app:chipBackgroundColor="#F0F0F0"
-            app:chipStrokeColor="#FF5722"
+            app:chipStrokeColor="#E0E0E0"
             app:chipStrokeWidth="1dp" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Adidas"
@@ -101,7 +101,7 @@
             app:chipStrokeWidth="1dp" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Jordan"
@@ -111,7 +111,7 @@
             app:chipStrokeWidth="1dp" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Vans"
@@ -121,7 +121,7 @@
             app:chipStrokeWidth="1dp" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="New Balance"
@@ -131,7 +131,7 @@
             app:chipStrokeWidth="1dp" />
     </com.google.android.material.chip.ChipGroup>
 
-    <!-- ================= PHẦN 3: NÚT BẤM (XÓA & ÁP DỤNG) ================= -->
+    <!-- ================= PHẦN 3: NÚT BẤM ================= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -140,7 +140,6 @@
         android:orientation="horizontal"
         android:weightSum="2">
 
-        <!-- Nút Xóa (Reset) -->
         <Button
             android:id="@+id/btn_clear"
             style="?attr/materialButtonOutlinedStyle"
@@ -155,7 +154,6 @@
             app:strokeColor="#E0E0E0"
             app:strokeWidth="1dp" />
 
-        <!-- Nút Áp Dụng -->
         <Button
             android:id="@+id/btn_apply"
             android:layout_width="0dp"

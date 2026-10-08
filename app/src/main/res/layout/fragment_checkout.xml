@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,8 +15,8 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="#FFFFFF"
-        android:paddingHorizontal="16dp"
-        app:elevation="2dp">
+        android:elevation="2dp"
+        android:paddingHorizontal="16dp">
 
         <ImageButton
             android:id="@+id/btn_back"
@@ -42,9 +41,7 @@
 
     </RelativeLayout>
 
-
-    <!-- ================= 2. NỘI DUNG ================= -->
-
+    <!-- ================= 2. NỘI DUNG CUỘN ================= -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -58,150 +55,21 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-
-            <!-- ================= ĐƠN HÀNG ================= -->
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Đơn hàng của bạn (2 sản phẩm)"
+                android:text="Đơn hàng của bạn"
                 android:textColor="#000000"
                 android:textSize="15sp"
                 android:textStyle="bold" />
 
-
-            <!-- ================= SẢN PHẨM 1 ================= -->
-
-            <androidx.cardview.widget.CardView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_checkout_items"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#EFEFEF"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:background="@drawable/bg_search_box"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/ic_avatar_placeholder"
-                        android:contentDescription="Sản phẩm" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Air Jordan 1 'Chicago'"
-                            android:textColor="#000000"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Size: 41 • SL: 1"
-                            android:textColor="#757575"
-                            android:textSize="13sp" />
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="5.490.000đ"
-                        android:textColor="#000000"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-
-            <!-- ================= SẢN PHẨM 2 ================= -->
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#EFEFEF"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:padding="12dp">
-
-                    <ImageView
-                        android:layout_width="64dp"
-                        android:layout_height="64dp"
-                        android:background="@drawable/bg_search_box"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/ic_avatar_placeholder"
-                        android:contentDescription="Sản phẩm" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Nike Air Max 90 Volt"
-                            android:textColor="#000000"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="Size: 40 • SL: 1"
-                            android:textColor="#757575"
-                            android:textSize="13sp" />
-
-                    </LinearLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3.690.000đ"
-                        android:textColor="#000000"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-
-            <!-- ================= THÔNG TIN GIAO HÀNG ================= -->
+                android:layout_marginBottom="12dp"
+                android:nestedScrollingEnabled="false" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -284,9 +152,7 @@
                 android:textColorHint="#9E9E9E"
                 android:textSize="15sp" />
 
-
-            <!-- ================= PHƯƠNG THỨC THANH TOÁN ================= -->
-
+            <!-- Phương thức thanh toán -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -297,85 +163,54 @@
                 android:textStyle="bold" />
 
             <RadioGroup
-                android:id="@+id/rg_payment_method"
+                android:id="@+id/rg_payment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:orientation="horizontal">
 
-
-                <!-- ================= COD ================= -->
-
-                <androidx.cardview.widget.CardView
+                <RadioButton
+                    android:id="@+id/rb_cod"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_marginEnd="6dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="#FF5722"
-                    app:strokeWidth="2dp">
+                    android:background="@drawable/bg_search_box"
+                    android:buttonTint="#FF5722"
+                    android:checked="true"
+                    android:paddingStart="8dp"
+                    android:text="Thanh toán COD"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
 
-                    <RadioButton
-                        android:id="@+id/rb_cod"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:checked="true"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="8dp"
-                        android:text="Thanh toán COD"
-                        android:textColor="#000000"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
-
-                </androidx.cardview.widget.CardView>
-
-
-                <!-- ================= THANH TOÁN BẰNG THẺ ================= -->
-
-                <androidx.cardview.widget.CardView
+                <RadioButton
+                    android:id="@+id/rb_banking"
                     android:layout_width="0dp"
                     android:layout_height="52dp"
                     android:layout_marginStart="6dp"
                     android:layout_weight="1"
-                    app:cardBackgroundColor="#FFFFFF"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="#EFEFEF"
-                    app:strokeWidth="1dp">
-
-                    <RadioButton
-                        android:id="@+id/rb_card"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="8dp"
-                        android:text="Thanh toán bằng thẻ"
-                        android:textColor="#757575"
-                        android:textSize="14sp" />
-
-                </androidx.cardview.widget.CardView>
-
+                    android:background="@drawable/bg_search_box"
+                    android:buttonTint="#FF5722"
+                    android:paddingStart="8dp"
+                    android:text="Chuyển khoản"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
             </RadioGroup>
 
         </LinearLayout>
 
     </ScrollView>
 
-
-    <!-- ================= 3. TỔNG KẾT ================= -->
-
+    <!-- ================= 3. TỔNG KẾT & NÚT ĐẶT HÀNG ================= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#FFFFFF"
+        android:elevation="16dp"
         android:orientation="vertical"
-        android:padding="16dp"
-        app:elevation="16dp">
-
-
-        <!-- TẠM TÍNH -->
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -395,15 +230,12 @@
                 android:id="@+id/tv_checkout_subtotal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="9.180.000đ"
+                android:text="0đ"
                 android:textColor="#000000"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
-
-
-        <!-- PHÍ VẬN CHUYỂN -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -438,9 +270,6 @@
             android:layout_marginBottom="12dp"
             android:background="#EFEFEF" />
 
-
-        <!-- TỔNG CỘNG -->
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -460,15 +289,12 @@
                 android:id="@+id/tv_checkout_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="9.180.000đ"
+                android:text="0đ"
                 android:textColor="#FF5722"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
-
-
-        <!-- ================= ĐẶT HÀNG ================= -->
 
         <Button
             android:id="@+id/btn_place_order"
