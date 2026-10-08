@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:fillViewport="true"
+    android:overScrollMode="never"
+    tools:ignore="HardcodedText,SpellCheckingInspection">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <!-- HEADER -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp"
+                android:src="@drawable/ic_back"
+                android:contentDescription="Quay lại"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Quản lý thẻ"
+                android:textColor="#263238"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_security_check"
+                android:contentDescription="Bảo mật" />
+
+        </LinearLayout>
+
+
+        <!-- TITLE -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Thêm thẻ mới"
+            android:textColor="#263238"
+            android:textSize="27sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Lưu thẻ để thanh toán nhanh chóng, an toàn&#10;cho những lần tiếp theo."
+            android:textColor="#9E9E9E"
+            android:textSize="13sp"
+            android:lineSpacingExtra="2dp" />
+
+
+        <!-- HỌ VÀ TÊN -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Họ và Tên"
+            android:textColor="#616161"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtCardName"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="7dp"
+            android:background="@drawable/bg_card_input"
+            android:hint="Nhập họ và tên"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="#263238"
+            android:textColorHint="#9E9E9E"
+            android:textSize="15sp"
+            android:singleLine="true"
+            android:inputType="textCapWords"
+            android:autofillHints="personName" />
+
+
+        <!-- SỐ THẺ -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Số thẻ"
+            android:textColor="#616161"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="7dp"
+            android:background="@drawable/bg_card_input"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="14dp"
+            android:paddingEnd="12dp">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_card"
+                android:contentDescription="Thẻ ngân hàng" />
+
+            <EditText
+                android:id="@+id/edtCardNumber"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="Nhập số thẻ vào đây"
+                android:paddingStart="7dp"
+                android:paddingEnd="6dp"
+                android:textColor="#263238"
+                android:textColorHint="#9E9E9E"
+                android:textSize="15sp"
+                android:singleLine="true"
+                android:inputType="number"
+                android:maxLength="19"
+                android:autofillHints="creditCardNumber" />
+
+        </LinearLayout>
+
+
+        <!-- HẠN THẺ -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Hạn thẻ (MM/YY)"
+            android:textColor="#616161"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtExpiry"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="7dp"
+            android:background="@drawable/bg_card_input"
+            android:hint="MM/YY"
+            android:paddingStart="16dp"
+            android:paddingEnd="12dp"
+            android:textColor="#263238"
+            android:textColorHint="#9E9E9E"
+            android:textSize="15sp"
+            android:singleLine="true"
+            android:inputType="number"
+            android:maxLength="5"
+            android:autofillHints="creditCardExpirationDate" />
+
+
+        <!-- SECURITY BOX -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="88dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_card_security"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="15dp"
+            android:paddingEnd="14dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_lock"
+                android:contentDescription="Thông tin được bảo vệ" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="11dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Thông tin được bảo vệ"
+                    android:textColor="#455A64"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="Thông tin thẻ được mã hóa và bảo vệ&#10;an toàn trên hệ thống."
+                    android:textColor="#90A4AE"
+                    android:textSize="11sp"
+                    android:lineSpacingExtra="2dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <!-- SECURITY NOTE -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Dữ liệu mã hóa - Không phải thông tin thẻ thật"
+            android:textColor="#9E9E9E"
+            android:textSize="11sp" />
+
+
+        <!-- SECURE INFORMATION -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="3dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_security_check"
+                android:contentDescription="Bảo mật" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="5dp"
+                android:text="Thông tin của bạn luôn được mã hóa"
+                android:textColor="#607D8B"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+
+        <!-- SAVE BUTTON -->
+        <Button
+            android:id="@+id/btnSaveCard"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="18dp"
+            android:layout_marginBottom="20dp"
+            android:background="#FF3D00"
+            android:gravity="center"
+            android:text="Lưu thẻ"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>
