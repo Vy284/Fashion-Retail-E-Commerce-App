@@ -39,6 +39,7 @@ CREATE TABLE Cards (
     card_holder_name TEXT NOT NULL,
     last_four_digits TEXT NOT NULL,
     expiry_date TEXT NOT NULL,
+    cvv TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
@@ -190,8 +191,8 @@ CREATE TABLE IF NOT EXISTS Notifications (
 INSERT INTO Users (full_name, email, phone, password_hash, avatar_url) VALUES
 ('Phương Loan', 'loan@example.com', '0901234567', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'avatar_1');
 
-INSERT INTO Cards (user_id, card_holder_name, last_four_digits, expiry_date) VALUES
-(1, 'PHUONG LOAN', '4242', '12/27');
+INSERT INTO Cards (user_id, card_holder_name, last_four_digits, expiry_date, cvv) VALUES
+(1, 'PHUONG LOAN', '4242', '12/27', '123');
 
 INSERT INTO Brands (name, logo_url) VALUES
 ('Nike', 'brand_nike'),

@@ -17,7 +17,6 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
-        <!-- HEADER -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="64dp"
@@ -53,8 +52,6 @@
 
         </LinearLayout>
 
-
-        <!-- TITLE -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -73,8 +70,6 @@
             android:textSize="13sp"
             android:lineSpacingExtra="2dp" />
 
-
-        <!-- HỌ VÀ TÊN -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -100,8 +95,6 @@
             android:inputType="textCapWords"
             android:autofillHints="personName" />
 
-
-        <!-- SỐ THẺ -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -148,35 +141,81 @@
         </LinearLayout>
 
 
-        <!-- HẠN THẺ -->
-        <TextView
+        <!-- HẠN THẺ & CVV -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Hạn thẻ (MM/YY)"
-            android:textColor="#616161"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-        <EditText
-            android:id="@+id/edtExpiry"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="7dp"
-            android:background="@drawable/bg_card_input"
-            android:hint="MM/YY"
-            android:paddingStart="16dp"
-            android:paddingEnd="12dp"
-            android:textColor="#263238"
-            android:textColorHint="#9E9E9E"
-            android:textSize="15sp"
-            android:singleLine="true"
-            android:inputType="number"
-            android:maxLength="5"
-            android:autofillHints="creditCardExpirationDate" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginEnd="8dp">
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Hạn thẻ (MM/YY)"
+                    android:textColor="#616161"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
 
-        <!-- SECURITY BOX -->
+                <EditText
+                    android:id="@+id/edtExpiry"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="7dp"
+                    android:background="@drawable/bg_card_input"
+                    android:hint="MM/YY"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="#263238"
+                    android:textColorHint="#9E9E9E"
+                    android:textSize="15sp"
+                    android:singleLine="true"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:autofillHints="creditCardExpirationDate" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="CVV"
+                    android:textColor="#616161"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/edtCvv"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="7dp"
+                    android:background="@drawable/bg_card_input"
+                    android:hint="123"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="#263238"
+                    android:textColorHint="#9E9E9E"
+                    android:textSize="15sp"
+                    android:singleLine="true"
+                    android:inputType="numberPassword"
+                    android:maxLength="4"
+                    android:autofillHints="creditCardSecurityCode" />
+            </LinearLayout>
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="88dp"
@@ -222,8 +261,6 @@
 
         </LinearLayout>
 
-
-        <!-- SECURITY NOTE -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -233,7 +270,6 @@
             android:textSize="11sp" />
 
 
-        <!-- SECURE INFORMATION -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="42dp"
@@ -258,8 +294,6 @@
 
         </LinearLayout>
 
-
-        <!-- SAVE BUTTON -->
         <Button
             android:id="@+id/btnSaveCard"
             android:layout_width="match_parent"
