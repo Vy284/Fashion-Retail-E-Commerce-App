@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "shoes_retail.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static final String SQL_FILE = "database/shoes_retail_ecommerce_schema_seed.sql";
 
     private final Context context;
@@ -48,6 +48,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_CARD_HOLDER_NAME = "card_holder_name";
     public static final String COLUMN_CARD_LAST_FOUR = "last_four_digits";
     public static final String COLUMN_CARD_EXPIRY = "expiry_date";
+    public static final String COLUMN_CARD_CVV = "cvv";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -822,13 +823,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // ---------- Cards ----------
-    public long addCard(int userId, String cardHolderName, String lastFourDigits, String expiryDate) {
+    public long addCard(int userId, String cardHolderName, String lastFourDigits, String expiryDate, String cvv) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_CARD_USER_ID, userId);
         values.put(COLUMN_CARD_HOLDER_NAME, cardHolderName);
         values.put(COLUMN_CARD_LAST_FOUR, lastFourDigits);
         values.put(COLUMN_CARD_EXPIRY, expiryDate);
+        values.put(COLUMN_CARD_CVV, cvv);
         return db.insert(TABLE_CARDS, null, values);
     }
 
@@ -845,4 +847,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[]{String.valueOf(cardId)});
         return rows > 0;
     }
+
 }
