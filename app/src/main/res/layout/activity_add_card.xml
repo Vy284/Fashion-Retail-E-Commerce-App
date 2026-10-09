@@ -93,7 +93,7 @@
             android:textSize="15sp"
             android:singleLine="true"
             android:inputType="textCapWords"
-            android:autofillHints="personName" />
+            android:importantForAutofill="no" />
 
         <TextView
             android:layout_width="match_parent"
@@ -136,7 +136,7 @@
                 android:singleLine="true"
                 android:inputType="number"
                 android:maxLength="19"
-                android:autofillHints="creditCardNumber" />
+                android:importantForAutofill="no" />
 
         </LinearLayout>
 
@@ -179,7 +179,7 @@
                     android:singleLine="true"
                     android:inputType="number"
                     android:maxLength="5"
-                    android:autofillHints="creditCardExpirationDate" />
+                    android:importantForAutofill="no" />
             </LinearLayout>
 
             <LinearLayout
@@ -212,7 +212,7 @@
                     android:singleLine="true"
                     android:inputType="numberPassword"
                     android:maxLength="4"
-                    android:autofillHints="creditCardSecurityCode" />
+                    android:importantForAutofill="no" />
             </LinearLayout>
         </LinearLayout>
 

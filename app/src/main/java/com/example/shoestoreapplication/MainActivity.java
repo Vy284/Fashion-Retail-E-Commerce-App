@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 
@@ -16,11 +17,23 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         // Khởi tạo Database
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         dbHelper.getWritableDatabase();
+
+        // Phiên đăng nhập cũ trỏ tới user không còn trong DB -> đăng xuất
+        SessionManager sessionManager = new SessionManager(this);
+        if (sessionManager.isLoggedIn() && !dbHelper.userExists(sessionManager.getUserId())) {
+            sessionManager.logout();
+            Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        setContentView(R.layout.activity_main);
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
 

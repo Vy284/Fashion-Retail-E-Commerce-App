@@ -240,6 +240,18 @@
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_my_cards"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="#EEEEEE"
+                android:text="Thẻ Của Tôi"
+                android:textColor="#000000"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_go_to_order_history"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"

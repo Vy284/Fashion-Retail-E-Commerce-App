@@ -8,18 +8,18 @@ public class SessionManager {
     private static final String KEY_USER_ID = "user_id";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
 
-    private SharedPreferences prefs;
-    private SharedPreferences.Editor editor;
+    private final SharedPreferences prefs;
 
     public SessionManager(Context context) {
-        prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        editor = prefs.edit();
+        prefs = context.getApplicationContext()
+                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
     public void createLoginSession(int userId) {
-        editor.putBoolean(KEY_IS_LOGGED_IN, true);
-        editor.putInt(KEY_USER_ID, userId);
-        editor.apply();
+        prefs.edit()
+                .putBoolean(KEY_IS_LOGGED_IN, true)
+                .putInt(KEY_USER_ID, userId)
+                .apply();
     }
 
     public boolean isLoggedIn() {
@@ -31,7 +31,6 @@ public class SessionManager {
     }
 
     public void logout() {
-        editor.clear();
-        editor.apply();
+        prefs.edit().clear().apply();
     }
 }

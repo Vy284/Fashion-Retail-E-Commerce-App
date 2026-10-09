@@ -27,6 +27,7 @@ public class ProfileActivity extends AppCompatActivity {
     private Button btnSave;
     private Button btnLogout;
     private Button btnGoToOrderHistory;
+    private Button btnMyCards; // Khai báo thêm biến nếu cần (hoặc dùng trực tiếp bằng findViewById)
 
     private DatabaseHelper dbHelper;
     private SessionManager sessionManager;
@@ -76,6 +77,7 @@ public class ProfileActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btn_save);
         btnLogout = findViewById(R.id.btn_logout);
         btnGoToOrderHistory = findViewById(R.id.btn_go_to_order_history);
+        btnMyCards = findViewById(R.id.btn_my_cards); // Ánh xạ ID nếu layout của bạn có nút này
     }
 
     private void loadUserData() {
@@ -123,6 +125,11 @@ public class ProfileActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+        // Thêm sự kiện chuyển màn hình sang SelectCardActivity cạnh btnGoToOrderHistory
+        findViewById(R.id.btn_my_cards).setOnClickListener(v ->
+                startActivity(new Intent(ProfileActivity.this, SelectCardActivity.class))
+        );
 
         btnGoToOrderHistory.setOnClickListener(v -> {
             getSupportFragmentManager().beginTransaction()

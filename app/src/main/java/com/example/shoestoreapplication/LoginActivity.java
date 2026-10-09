@@ -3,7 +3,6 @@ package com.example.shoestoreapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -29,16 +28,21 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         sessionManager = new SessionManager(this);
+        dbHelper = new DatabaseHelper(this);
 
         if (sessionManager.isLoggedIn()) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-            finish();
-            return;
+            if (dbHelper.userExists(sessionManager.getUserId())) {
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
+                return;
+            } else {
+                // user_id đã lưu không còn trong DB (DB bị dựng lại) -> xóa phiên cũ
+                sessionManager.logout();
+            }
         }
 
         setContentView(R.layout.activity_login);
 
-        dbHelper = new DatabaseHelper(this);
         initViews();
         setupListeners();
     }
@@ -57,10 +61,9 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
 
-
         btnTogglePassword.setOnClickListener(v -> {
             if (isPasswordVisible) {
-
+                // Ẩn mật khẩu
                 edtPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
                 btnTogglePassword.setImageResource(R.drawable.ic_eye_closed);
             } else {
@@ -72,15 +75,12 @@ public class LoginActivity extends AppCompatActivity {
             edtPassword.setSelection(edtPassword.getText().length());
         });
 
-
         btnLogin.setOnClickListener(v -> handleLogin());
     }
-
 
     private boolean isValidEmail(String email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
-
 
     private boolean isValidPhone(String phone) {
         return phone.matches("^0[0-9]{9,10}$");
@@ -90,18 +90,15 @@ public class LoginActivity extends AppCompatActivity {
         String emailOrPhone = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
-
         if (emailOrPhone.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-
         if (!isValidEmail(emailOrPhone) && !isValidPhone(emailOrPhone)) {
             Toast.makeText(this, "Vui lòng nhập đúng định dạng Email hoặc Số điện thoại!", Toast.LENGTH_SHORT).show();
             return;
         }
-
 
         int userId = dbHelper.checkLogin(emailOrPhone, password);
 
