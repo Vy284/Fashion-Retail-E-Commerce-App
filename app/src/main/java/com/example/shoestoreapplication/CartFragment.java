@@ -9,75 +9,63 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.adapters.CartAdapter;
 import com.example.shoestoreapplication.models.CartItem;
 import com.example.shoestoreapplication.utils.SessionManager;
-import com.example.shoestoreapplication.adapters.CartAdapter;
+import com.example.shoestoreapplication.viewmodel.CartViewModel;
+
 import java.text.DecimalFormat;
-import java.util.List;
+import java.util.ArrayList;
 
 public class CartFragment extends Fragment {
 
-    private RecyclerView rvCartItems;
     private TextView tvSubtotal, tvTotalPrice;
-    private Button btnCheckout;
-
     private CartAdapter adapter;
-    private DatabaseHelper dbHelper;
-    private SessionManager sessionManager;
-    private int cartId;
+    private CartViewModel vm;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_cart, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_cart, container, false);
+    }
 
-        dbHelper = new DatabaseHelper(requireContext());
-        sessionManager = new SessionManager(requireContext());
-        cartId = dbHelper.getOrCreateCartId(sessionManager.getUserId());
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        vm = new ViewModelProvider(this).get(CartViewModel.class);
 
-        rvCartItems = view.findViewById(R.id.rv_cart_items);
+        RecyclerView rv = view.findViewById(R.id.rv_cart_items);
         tvSubtotal = view.findViewById(R.id.tv_subtotal);
         tvTotalPrice = view.findViewById(R.id.tv_total_price);
-        btnCheckout = view.findViewById(R.id.btn_checkout);
+        Button btnCheckout = view.findViewById(R.id.btn_checkout);
 
-        setupRecyclerView();
+        rv.setLayoutManager(new LinearLayoutManager(requireContext()));
+        adapter = new CartAdapter(new ArrayList<>(), new CartAdapter.OnCartChangeListener() {
+            @Override public void onQuantityChanged(CartItem item, int newQuantity) {
+                vm.changeQuantity(item, newQuantity);
+            }
+            @Override public void onRemove(CartItem item) { vm.remove(item); }
+        });
+        rv.setAdapter(adapter);
 
-        btnCheckout.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new CheckoutFragment())
-                    .addToBackStack(null)
-                    .commit();
+        vm.getItems().observe(getViewLifecycleOwner(), adapter::updateData);
+        vm.getTotal().observe(getViewLifecycleOwner(), total -> {
+            String text = new DecimalFormat("#,###").format(total) + "đ";
+            tvSubtotal.setText(text);
+            tvTotalPrice.setText(text);
         });
 
-        return view;
-    }
+        btnCheckout.setOnClickListener(v ->
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new CheckoutFragment())
+                        .addToBackStack(null)
+                        .commit());
 
-    private void setupRecyclerView() {
-        rvCartItems.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        List<CartItem> items = dbHelper.getCartItems(cartId);
-        adapter = new CartAdapter(items, (item, newQuantity) -> {
-            dbHelper.updateCartItemQuantity(item.getCartItemId(), newQuantity);
-            calculateTotal(items);
-        });
-
-        rvCartItems.setAdapter(adapter);
-        calculateTotal(items);
-    }
-
-    private void calculateTotal(List<CartItem> items) {
-        int total = 0;
-        for (CartItem item : items) {
-            total += (item.getPrice() * item.getQuantity());
-        }
-
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        String formattedTotal = formatter.format(total) + "đ";
-        tvSubtotal.setText(formattedTotal);
-        tvTotalPrice.setText(formattedTotal);
+        vm.load(new SessionManager(requireContext()).getUserId());
     }
 }

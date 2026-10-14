@@ -1,9 +1,7 @@
 package com.example.shoestoreapplication;
 
-import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,26 +10,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.models.NotificationItem;
 import com.example.shoestoreapplication.utils.SessionManager;
+import com.example.shoestoreapplication.viewmodel.NotificationsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationsFragment extends Fragment {
 
-    private static class Notif {
-        int id; String title; String message; boolean read; String time;
-    }
-
-    private DatabaseHelper db;
-    private int userId;
-    private final List<Notif> items = new ArrayList<>();
-    private Adapter adapter;
+    private NotificationsViewModel vm;
+    private NotifAdapter adapter;
     private TextView tvEmpty;
+    private int userId;
 
     @Nullable
     @Override
@@ -43,50 +38,47 @@ public class NotificationsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        db = new DatabaseHelper(requireContext());
         userId = new SessionManager(requireContext()).getUserId();
+        vm = new ViewModelProvider(this).get(NotificationsViewModel.class);
         tvEmpty = view.findViewById(R.id.tv_empty);
 
         view.findViewById(R.id.tv_back).setOnClickListener(v ->
                 requireActivity().getOnBackPressedDispatcher().onBackPressed());
-
-        view.findViewById(R.id.tv_read_all).setOnClickListener(v -> {
-            db.markAllNotificationsAsRead(userId);
-            load();
-        });
+        view.findViewById(R.id.tv_read_all).setOnClickListener(v -> vm.markAllRead(userId));
 
         RecyclerView rv = view.findViewById(R.id.rv_notifications);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new Adapter();
+        adapter = new NotifAdapter(item -> {
+            if (!item.read) vm.markRead(item.id, userId);
+        });
         rv.setAdapter(adapter);
-        load();
+
+        vm.getItems().observe(getViewLifecycleOwner(), list -> {
+            adapter.submit(list);
+            tvEmpty.setVisibility(list.isEmpty() ? View.VISIBLE : View.GONE);
+        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (adapter != null) load();
+        vm.load(userId);
     }
 
-    private void load() {
-        items.clear();
-        try (Cursor c = db.getNotificationsByUserId(userId)) {
-            while (c.moveToNext()) {
-                Notif n = new Notif();
-                n.id = c.getInt(c.getColumnIndexOrThrow("notification_id"));
-                n.title = c.getString(c.getColumnIndexOrThrow("title"));
-                n.message = c.getString(c.getColumnIndexOrThrow("message"));
-                n.read = c.getInt(c.getColumnIndexOrThrow("is_read")) == 1;
-                n.time = c.getString(c.getColumnIndexOrThrow("created_at"));
-                items.add(n);
-            }
+    private static class NotifAdapter extends RecyclerView.Adapter<NotifAdapter.VH> {
+        interface OnClick { void onClick(NotificationItem item); }
+
+        private final List<NotificationItem> items = new ArrayList<>();
+        private final OnClick onClick;
+
+        NotifAdapter(OnClick onClick) { this.onClick = onClick; }
+
+        void submit(List<NotificationItem> list) {
+            items.clear();
+            items.addAll(list);
+            notifyDataSetChanged();
         }
-        Log.d("NOTIF", "userId=" + userId + ", count=" + items.size());
-        adapter.notifyDataSetChanged();
-        tvEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
-    }
 
-    private class Adapter extends RecyclerView.Adapter<Adapter.VH> {
         @NonNull
         @Override
         public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -96,23 +88,18 @@ public class NotificationsFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull VH h, int position) {
-            Notif n = items.get(position);
+            NotificationItem n = items.get(position);
             h.title.setText((n.read ? "" : "● ") + n.title);
             h.message.setText(n.message);
             h.time.setText(n.time);
-            h.itemView.setBackgroundColor(n.read ? Color.parseColor("#F7F7F7") : Color.parseColor("#FFF1EB"));
-            h.itemView.setOnClickListener(v -> {
-                if (!n.read) {
-                    db.markNotificationAsRead(n.id);
-                    load();
-                }
-            });
+            h.itemView.setBackgroundColor(Color.parseColor(n.read ? "#F7F7F7" : "#FFF1EB"));
+            h.itemView.setOnClickListener(v -> onClick.onClick(n));
         }
 
         @Override
         public int getItemCount() { return items.size(); }
 
-        class VH extends RecyclerView.ViewHolder {
+        static class VH extends RecyclerView.ViewHolder {
             TextView title, message, time;
             VH(View v) {
                 super(v);

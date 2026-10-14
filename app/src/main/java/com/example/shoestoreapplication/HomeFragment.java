@@ -13,14 +13,15 @@ import android.widget.RadioGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.adapters.ProductAdapter;
-import com.example.shoestoreapplication.database.DatabaseHelper;
 import com.example.shoestoreapplication.models.Product;
 import com.example.shoestoreapplication.utils.Nav;
 import com.example.shoestoreapplication.utils.SessionManager;
+import com.example.shoestoreapplication.viewmodel.HomeViewModel;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
@@ -31,18 +32,10 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    private DatabaseHelper db;
+    private HomeViewModel vm;
     private SessionManager session;
     private ProductAdapter adapter;
-
-    private EditText edtSearch;
     private MaterialButton btnMen, btnWomen;
-
-    // Trạng thái lọc hiện tại
-    private String gender = "all";                 // "all" | "men" | "women"
-    private String sort = "default";               // "default" | "price_asc" | "price_desc"
-    private final List<String> selectedBrands = new ArrayList<>();
-    private boolean showAll = false;               // false = chỉ hiện 10 sản phẩm nổi bật
 
     @Nullable
     @Override
@@ -54,10 +47,10 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        db = new DatabaseHelper(requireContext());
+        vm = new ViewModelProvider(this).get(HomeViewModel.class);
         session = new SessionManager(requireContext());
 
-        edtSearch = view.findViewById(R.id.edt_search);
+        EditText edtSearch = view.findViewById(R.id.edt_search);
         btnMen = view.findViewById(R.id.btn_category_men);
         btnWomen = view.findViewById(R.id.btn_category_women);
         MaterialButton btnSeeAll = view.findViewById(R.id.btn_see_all);
@@ -71,69 +64,35 @@ public class HomeFragment extends Fragment {
                 Nav.open(this, ProductDetailFragment.newInstance(p.getId())));
         rv.setAdapter(adapter);
 
-        // Nút tim wishlist (chưa đăng nhập thì bấm không có tác dụng)
         adapter.setWishlistHandler(new ProductAdapter.WishlistHandler() {
-            @Override
-            public boolean isWishlisted(Product p) {
-                int uid = session.getUserId();
-                return uid != -1 && db.isInWishlist(uid, p.getId());
+            @Override public boolean isWishlisted(Product p) {
+                return vm.isWishlisted(session.getUserId(), p.getId());
             }
-
-            @Override
-            public boolean onToggle(Product p) {
-                int uid = session.getUserId();
-                return uid != -1 && db.toggleWishlist(uid, p.getId());
+            @Override public boolean onToggle(Product p) {
+                return vm.toggleWishlist(session.getUserId(), p.getId());
             }
         });
 
-        // Search bar: bấm vào là chuyển sang màn Category
+        // Quan sát dữ liệu từ ViewModel
+        vm.getProducts().observe(getViewLifecycleOwner(), adapter::setItems);
+        vm.getGender().observe(getViewLifecycleOwner(), g -> {
+            styleGenderButton(btnMen, "men".equals(g));
+            styleGenderButton(btnWomen, "women".equals(g));
+        });
+
         edtSearch.setFocusable(false);
         edtSearch.setClickable(true);
         edtSearch.setOnClickListener(v -> Nav.open(this, new CategoryFragment()));
 
-        // Giày nam / nữ: bấm lần nữa để bỏ chọn
-        btnMen.setOnClickListener(v -> {
-            gender = "men".equals(gender) ? "all" : "men";
-            updateGenderButtons();
-            loadProducts();
-        });
-        btnWomen.setOnClickListener(v -> {
-            gender = "women".equals(gender) ? "all" : "women";
-            updateGenderButtons();
-            loadProducts();
-        });
-
-        btnSeeAll.setOnClickListener(v -> {
-            showAll = true;
-            loadProducts();
-        });
-
-        // Nút lọc: mở bottom sheet
+        btnMen.setOnClickListener(v -> vm.toggleGender("men"));
+        btnWomen.setOnClickListener(v -> vm.toggleGender("women"));
+        btnSeeAll.setOnClickListener(v -> vm.showAllProducts());
         btnFilter.setOnClickListener(v -> showFilterSheet());
-
-        btnNotification.setOnClickListener(v ->
-                Nav.open(this, new NotificationsFragment()));
-
+        btnNotification.setOnClickListener(v -> Nav.open(this, new NotificationsFragment()));
         imgAvatar.setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), ProfileActivity.class)));
 
-        updateGenderButtons();
-        loadProducts();
-    }
-
-    private void loadProducts() {
-        List<Product> list = db.filterProducts("", gender, selectedBrands, sort);
-
-        boolean filtering = !"all".equals(gender) || !selectedBrands.isEmpty();
-        if (!showAll && !filtering && list.size() > 10) {
-            list = new ArrayList<>(list.subList(0, 10));
-        }
-        adapter.setItems(list);
-    }
-
-    private void updateGenderButtons() {
-        styleGenderButton(btnMen, "men".equals(gender));
-        styleGenderButton(btnWomen, "women".equals(gender));
+        vm.load();
     }
 
     private void styleGenderButton(MaterialButton btn, boolean selected) {
@@ -142,7 +101,6 @@ public class HomeFragment extends Fragment {
         btn.setTextColor(Color.parseColor(selected ? "#FFFFFF" : "#111111"));
     }
 
-    // ---------- Bộ lọc dạng Bottom Sheet ----------
     private void showFilterSheet() {
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         View sheet = getLayoutInflater().inflate(R.layout.bottom_sheet_filter, null);
@@ -150,6 +108,8 @@ public class HomeFragment extends Fragment {
         RadioGroup rgSort = sheet.findViewById(R.id.rg_sort);
         ChipGroup chipGroup = sheet.findViewById(R.id.chip_group_brands);
 
+        String sort = vm.getSort();
+        List<String> selected = vm.getSelectedBrands();
         if ("price_asc".equals(sort)) rgSort.check(R.id.rb_price_low_high);
         else if ("price_desc".equals(sort)) rgSort.check(R.id.rb_price_high_low);
         else rgSort.check(R.id.rb_default);
@@ -157,7 +117,7 @@ public class HomeFragment extends Fragment {
         for (int i = 0; i < chipGroup.getChildCount(); i++) {
             Chip chip = (Chip) chipGroup.getChildAt(i);
             chip.setCheckable(true);
-            chip.setChecked(selectedBrands.contains(chip.getText().toString()));
+            chip.setChecked(selected.contains(chip.getText().toString()));
         }
 
         sheet.findViewById(R.id.btn_clear).setOnClickListener(v -> {
@@ -169,17 +129,15 @@ public class HomeFragment extends Fragment {
 
         sheet.findViewById(R.id.btn_apply).setOnClickListener(v -> {
             int checkedId = rgSort.getCheckedRadioButtonId();
-            if (checkedId == R.id.rb_price_low_high) sort = "price_asc";
-            else if (checkedId == R.id.rb_price_high_low) sort = "price_desc";
-            else sort = "default";
+            String newSort = checkedId == R.id.rb_price_low_high ? "price_asc"
+                    : checkedId == R.id.rb_price_high_low ? "price_desc" : "default";
 
-            selectedBrands.clear();
+            List<String> brands = new ArrayList<>();
             for (int i = 0; i < chipGroup.getChildCount(); i++) {
                 Chip chip = (Chip) chipGroup.getChildAt(i);
-                if (chip.isChecked()) selectedBrands.add(chip.getText().toString());
+                if (chip.isChecked()) brands.add(chip.getText().toString());
             }
-
-            loadProducts();
+            vm.applyFilter(newSort, brands);
             dialog.dismiss();
         });
 

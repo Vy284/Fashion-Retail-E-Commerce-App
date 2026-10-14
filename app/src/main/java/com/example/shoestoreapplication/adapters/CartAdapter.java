@@ -6,10 +6,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.R;
-import com.example.shoestoreapplication.database.DatabaseHelper;
 import com.example.shoestoreapplication.models.CartItem;
 import com.example.shoestoreapplication.utils.ImageUtils;
 import java.text.DecimalFormat;
@@ -18,11 +18,11 @@ import java.util.List;
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
     private List<CartItem> cartItems;
-    private OnCartChangeListener listener;
-    private DatabaseHelper dbHelper;
+    private final OnCartChangeListener listener;
 
     public interface OnCartChangeListener {
         void onQuantityChanged(CartItem item, int newQuantity);
+        void onRemove(CartItem item);
     }
 
     public CartAdapter(List<CartItem> cartItems, OnCartChangeListener listener) {
@@ -38,7 +38,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     @NonNull
     @Override
     public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cart_product, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_cart_product, parent, false);
         return new CartViewHolder(view);
     }
 
@@ -49,16 +50,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         holder.tvName.setText(item.getProductName());
         holder.tvSize.setText("Size: " + item.getSize());
         holder.tvQty.setText(String.valueOf(item.getQuantity()));
+        holder.tvPrice.setText(new DecimalFormat("#,###").format(item.getPrice()) + "đ");
 
-        DecimalFormat formatter = new DecimalFormat("#,###");
-        holder.tvPrice.setText(formatter.format(item.getPrice()) + "đ");
-
-        // Hiện ảnh sản phẩm (tra theo tên sản phẩm)
+        // Ảnh đã được lấy sẵn trong getCartItems(): không cần truy vấn DB trong Adapter
         if (holder.imgProduct != null) {
-            if (dbHelper == null) {
-                dbHelper = new DatabaseHelper(holder.itemView.getContext());
-            }
-            ImageUtils.load(holder.imgProduct, dbHelper.getImageByProductName(item.getProductName()));
+            ImageUtils.load(holder.imgProduct, item.getImageUrl());
         }
 
         holder.btnPlus.setOnClickListener(v -> {
@@ -74,18 +70,23 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 item.setQuantity(newQty);
                 holder.tvQty.setText(String.valueOf(newQty));
                 listener.onQuantityChanged(item, newQty);
+            } else {
+                new AlertDialog.Builder(v.getContext())
+                        .setTitle("Xóa sản phẩm")
+                        .setMessage("Bỏ \"" + item.getProductName() + "\" khỏi giỏ hàng?")
+                        .setPositiveButton("Xóa", (d, w) -> listener.onRemove(item))
+                        .setNegativeButton("Hủy", null)
+                        .show();
             }
         });
     }
 
     @Override
-    public int getItemCount() {
-        return cartItems.size();
-    }
+    public int getItemCount() { return cartItems.size(); }
 
     public static class CartViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvSize, tvPrice, tvQty, btnMinus, btnPlus;
-        ImageView imgProduct;   // null nếu item_cart_product.xml không có ImageView với id đã thử
+        ImageView imgProduct;
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -96,12 +97,9 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             btnMinus = itemView.findViewById(R.id.btn_minus);
             btnPlus = itemView.findViewById(R.id.btn_plus);
 
-            // Tìm ImageView theo tên id để không lỗi biên dịch khi id khác
             String pkg = itemView.getContext().getPackageName();
             int id = itemView.getResources().getIdentifier("img_product", "id", pkg);
-            if (id == 0) {
-                id = itemView.getResources().getIdentifier("img_cart_product", "id", pkg);
-            }
+            if (id == 0) id = itemView.getResources().getIdentifier("img_cart_product", "id", pkg);
             imgProduct = id != 0 ? (ImageView) itemView.findViewById(id) : null;
         }
     }

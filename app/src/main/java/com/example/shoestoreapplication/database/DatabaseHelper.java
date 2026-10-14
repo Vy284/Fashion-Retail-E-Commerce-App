@@ -881,4 +881,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rows > 0;
     }
 
+    public boolean deleteCartItem(int cartItemId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete("Cart_Items", "cart_item_id = ?",
+                new String[]{String.valueOf(cartItemId)}) > 0;
+    }
+
 }

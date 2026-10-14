@@ -85,7 +85,7 @@ public class AddCardActivity extends AppCompatActivity {
     private void saveCard() {
         String cardName = edtCardName.getText().toString().trim();
         String cardNumber = edtCardNumber.getText().toString().replace(" ", "").trim();
-        String expiry = edtExpiry.getText().toString().trim();
+        String expiry = normalizeExpiry(edtExpiry.getText().toString().trim());
         String cvv = edtCvv.getText().toString().trim();
 
         if (TextUtils.isEmpty(cardName)) {
@@ -100,17 +100,29 @@ public class AddCardActivity extends AppCompatActivity {
             return;
         }
 
-        // Chuẩn hóa hạn thẻ trước khi kiểm tra (phòng trường hợp thiếu dấu /)
-        expiry = normalizeExpiry(expiry);
-
+        // 1) Định dạng MM/YY
         if (TextUtils.isEmpty(expiry) || !expiry.matches("^(0[1-9]|1[0-2])/([0-9]{2})$")) {
             edtExpiry.setError("Hạn thẻ không hợp lệ (MM/YY)");
             edtExpiry.requestFocus();
             return;
         }
 
-        // Ghi lại giá trị đã chuẩn hóa lên ô nhập
-        edtExpiry.setText(expiry);
+        // 2) Quy tắc nghiệp vụ: thẻ chưa hết hạn và năm không quá xa
+        int month = Integer.parseInt(expiry.substring(0, 2));
+        int year = 2000 + Integer.parseInt(expiry.substring(3, 5));
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        int curYear = now.get(java.util.Calendar.YEAR);
+        int curMonth = now.get(java.util.Calendar.MONTH) + 1;
+        if (year < curYear || (year == curYear && month < curMonth)) {
+            edtExpiry.setError("Thẻ đã hết hạn");
+            edtExpiry.requestFocus();
+            return;
+        }
+        if (year > curYear + 20) {
+            edtExpiry.setError("Năm hết hạn không hợp lệ");
+            edtExpiry.requestFocus();
+            return;
+        }
 
         if (!cvv.matches("^[0-9]{3,4}$")) {
             edtCvv.setError("CVV phải có 3 hoặc 4 chữ số");
@@ -124,19 +136,19 @@ public class AddCardActivity extends AppCompatActivity {
             return;
         }
 
-        // Lấy 4 số cuối của thẻ để hiển thị dạng giả lập an toàn
+        // Chỉ lưu 4 số cuối của thẻ
         String lastFourDigits = cardNumber.substring(cardNumber.length() - 4);
         boolean success = dbHelper.addCard(userId, cardName.toUpperCase(), lastFourDigits, expiry, cvv);
 
         if (success) {
             Toast.makeText(this, "Lưu thẻ thành công!", Toast.LENGTH_SHORT).show();
-            finish(); // Quay lại màn hình chọn thẻ
+            finish();
         } else {
             Toast.makeText(this, "Lưu thẻ thất bại, vui lòng thử lại.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /** Chuẩn hóa chuỗi hạn thẻ thành dạng MM/YY */
+
     private String normalizeExpiry(String raw) {
         if (raw == null) return "";
         String digits = raw.replaceAll("[^0-9]", "");
