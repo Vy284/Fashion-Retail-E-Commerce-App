@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.R;
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.OrderDao;
 import com.example.shoestoreapplication.models.Order;
 import com.example.shoestoreapplication.utils.ImageUtils;
 import java.text.DecimalFormat;
@@ -24,7 +24,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     private List<Order> orderList;
     private OnDetailClickListener detailListener;
-    private DatabaseHelper dbHelper;
+    private OrderDao orderDao;
 
     public OrderAdapter(List<Order> orderList) {
         this.orderList = orderList;
@@ -60,10 +60,10 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         }
 
         // Món đầu tiên của đơn: tên, số lượng, ảnh
-        if (dbHelper == null) {
-            dbHelper = new DatabaseHelper(holder.itemView.getContext());
+        if (orderDao == null) {
+            orderDao = new OrderDao(holder.itemView.getContext());
         }
-        String[] preview = dbHelper.getOrderPreview(order.getOrderId());
+        String[] preview = orderDao.getOrderPreview(order.getOrderId());
         int others = Integer.parseInt(preview[3]);
 
         if (holder.tvProductName != null) holder.tvProductName.setText(preview[0]);

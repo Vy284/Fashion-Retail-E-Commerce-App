@@ -14,7 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.OrderDao;
 
 import java.util.Locale;
 
@@ -47,10 +47,10 @@ public class OrderDetailFragment extends Fragment {
         int orderId = getArguments() != null ? getArguments().getInt(ARG_ORDER_ID, -1) : -1;
         if (orderId == -1) return;
 
-        DatabaseHelper db = new DatabaseHelper(requireContext());
+        OrderDao orderDao = new OrderDao(requireContext());
 
         // Thông tin chung
-        try (Cursor c = db.getOrderSummary(orderId)) {
+        try (Cursor c = orderDao.getOrderSummary(orderId)) {
             if (c.moveToFirst()) {
                 ((TextView) view.findViewById(R.id.tv_code)).setText("Đơn hàng #" + c.getString(0));
                 ((TextView) view.findViewById(R.id.tv_status)).setText(statusText(c.getString(1)));
@@ -65,7 +65,7 @@ public class OrderDetailFragment extends Fragment {
         // Danh sách sản phẩm
         LinearLayout llItems = view.findViewById(R.id.ll_items);
         llItems.removeAllViews();
-        try (Cursor c = db.getOrderItems(orderId)) {
+        try (Cursor c = orderDao.getOrderItems(orderId)) {
             while (c.moveToNext()) {
                 String name = c.getString(0);
                 String size = c.getString(1);

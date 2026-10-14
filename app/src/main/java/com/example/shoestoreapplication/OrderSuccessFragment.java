@@ -1,7 +1,6 @@
 package com.example.shoestoreapplication;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
-import com.example.shoestoreapplication.utils.SessionManager;
+import com.example.shoestoreapplication.database.dao.OrderDao;
 
 public class OrderSuccessFragment extends Fragment {
 
-    private DatabaseHelper dbHelper;
-    private SessionManager sessionManager;
+    private OrderDao orderDao;
 
     public static OrderSuccessFragment newInstance(long orderId) {
         OrderSuccessFragment fragment = new OrderSuccessFragment();
@@ -34,21 +31,16 @@ public class OrderSuccessFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_order_success, container, false);
 
-        dbHelper = new DatabaseHelper(requireContext());
-        sessionManager = new SessionManager(requireContext());
+        orderDao = new OrderDao(requireContext());
 
         TextView tvOrderCode = view.findViewById(R.id.tv_order_code);
         TextView tvReceiverInfo = view.findViewById(R.id.tv_receiver_info);
         TextView tvReceiverAddress = view.findViewById(R.id.tv_receiver_address);
         Button btnBackHome = view.findViewById(R.id.btn_back_home);
 
-        long orderId = -1;
-        if (getArguments() != null) {
-            orderId = getArguments().getLong("order_id");
-            tvOrderCode.setText("#KKS-" + orderId);
-        }
+        long orderId = getArguments() != null ? getArguments().getLong("order_id", -1) : -1;
 
-        loadReceiverInfo(orderId, tvReceiverInfo, tvReceiverAddress);
+        loadOrderInfo(orderId, tvOrderCode, tvReceiverInfo, tvReceiverAddress);
 
         btnBackHome.setOnClickListener(v -> {
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -59,27 +51,17 @@ public class OrderSuccessFragment extends Fragment {
         return view;
     }
 
-    private void loadReceiverInfo(long orderId, TextView tvInfo, TextView tvAddress) {
-        int userId = sessionManager.getUserId();
-        String name = "";
-        String phone = "";
-
-        Cursor userCursor = dbHelper.getUserById(userId);
-        if (userCursor != null && userCursor.moveToFirst()) {
-            name = userCursor.getString(userCursor.getColumnIndexOrThrow("full_name"));
-            phone = userCursor.getString(userCursor.getColumnIndexOrThrow("phone"));
-            userCursor.close();
+    // Lấy mã đơn và thông tin người nhận từ chính đơn hàng (snapshot lúc đặt)
+    private void loadOrderInfo(long orderId, TextView tvCode, TextView tvInfo, TextView tvAddress) {
+        if (orderId == -1) {
+            return;
         }
-
-        tvInfo.setText(name + " - " + phone);
-
-        if (orderId != -1) {
-            SQLiteDatabase db = dbHelper.getReadableDatabase();
-            Cursor orderCursor = db.rawQuery("SELECT address_text_snapshot FROM Orders WHERE order_id = ?", new String[]{String.valueOf(orderId)});
-            if (orderCursor != null && orderCursor.moveToFirst()) {
-                String address = orderCursor.getString(0);
-                tvAddress.setText(address);
-                orderCursor.close();
+        // Cột: 0=order_code, 1=status, 2=total, 3=created_at, 4=tên, 5=sđt, 6=địa chỉ
+        try (Cursor c = orderDao.getOrderSummary((int) orderId)) {
+            if (c.moveToFirst()) {
+                tvCode.setText("#" + c.getString(0));
+                tvInfo.setText(c.getString(4) + " - " + c.getString(5));
+                tvAddress.setText(c.getString(6));
             }
         }
     }

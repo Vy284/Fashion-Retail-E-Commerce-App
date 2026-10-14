@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.CardDao;
 import com.example.shoestoreapplication.utils.SessionManager;
 
 public class AddCardActivity extends AppCompatActivity {
@@ -19,7 +19,7 @@ public class AddCardActivity extends AppCompatActivity {
     private EditText edtCardName, edtCardNumber, edtExpiry, edtCvv;
     private Button btnSaveCard;
     private ImageView btnBack;
-    private DatabaseHelper dbHelper;
+    private CardDao cardDao;
     private SessionManager sessionManager;
 
     @Override
@@ -27,7 +27,7 @@ public class AddCardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_card);
 
-        dbHelper = new DatabaseHelper(this);
+        cardDao = new CardDao(this);
         sessionManager = new SessionManager(this);
 
         edtCardName = findViewById(R.id.edtCardName);
@@ -138,7 +138,7 @@ public class AddCardActivity extends AppCompatActivity {
 
         // Chỉ lưu 4 số cuối của thẻ
         String lastFourDigits = cardNumber.substring(cardNumber.length() - 4);
-        boolean success = dbHelper.addCard(userId, cardName.toUpperCase(), lastFourDigits, expiry, cvv);
+        boolean success = cardDao.addCard(userId, cardName.toUpperCase(), lastFourDigits, expiry, cvv);
 
         if (success) {
             Toast.makeText(this, "Lưu thẻ thành công!", Toast.LENGTH_SHORT).show();

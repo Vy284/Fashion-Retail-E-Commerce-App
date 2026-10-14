@@ -10,7 +10,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.UserDao;
 import com.example.shoestoreapplication.utils.SessionManager;
 
 public class LoginActivity extends AppCompatActivity {
@@ -20,7 +20,7 @@ public class LoginActivity extends AppCompatActivity {
     private Button btnLogin, btnGoToRegister;
     private boolean isPasswordVisible = false;
 
-    private DatabaseHelper dbHelper;
+    private UserDao userDao;
     private SessionManager sessionManager;
 
     @Override
@@ -28,10 +28,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         sessionManager = new SessionManager(this);
-        dbHelper = new DatabaseHelper(this);
+        userDao = new UserDao(this);
 
         if (sessionManager.isLoggedIn()) {
-            if (dbHelper.userExists(sessionManager.getUserId())) {
+            if (userDao.existsById(sessionManager.getUserId())) {
                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                 finish();
                 return;
@@ -100,7 +100,7 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        int userId = dbHelper.checkLogin(emailOrPhone, password);
+        int userId = userDao.checkLogin(emailOrPhone, password);
 
         if (userId != -1) {
             Toast.makeText(this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();

@@ -14,7 +14,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.CardDao;
 import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.card.MaterialCardView;
 
@@ -27,7 +27,7 @@ public class SelectCardActivity extends AppCompatActivity {
     private TextView txtSavedCardTitle, txtEmpty, txtTotalPayment;
     private Button btnAddCard, btnPayment;
 
-    private DatabaseHelper dbHelper;
+    private CardDao cardDao;
     private SessionManager sessionManager;
 
     private int selectedCardId = -1;
@@ -38,7 +38,7 @@ public class SelectCardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_card);
 
-        dbHelper = new DatabaseHelper(this);
+        cardDao = new CardDao(this);
         sessionManager = new SessionManager(this);
 
         cardsContainer = findViewById(R.id.cardsContainer);
@@ -94,11 +94,11 @@ public class SelectCardActivity extends AppCompatActivity {
         int count = 0;
         LayoutInflater inflater = LayoutInflater.from(this);
 
-        try (Cursor c = dbHelper.getCardsByUserId(userId)) {
-            int idxId = c.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CARD_ID);
-            int idxHolder = c.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CARD_HOLDER_NAME);
-            int idxLast4 = c.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CARD_LAST_FOUR);
-            int idxExpiry = c.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CARD_EXPIRY);
+        try (Cursor c = cardDao.getCardsByUserId(userId)) {
+            int idxId = c.getColumnIndexOrThrow(CardDao.COLUMN_CARD_ID);
+            int idxHolder = c.getColumnIndexOrThrow(CardDao.COLUMN_CARD_HOLDER_NAME);
+            int idxLast4 = c.getColumnIndexOrThrow(CardDao.COLUMN_CARD_LAST_FOUR);
+            int idxExpiry = c.getColumnIndexOrThrow(CardDao.COLUMN_CARD_EXPIRY);
 
             while (c.moveToNext()) {
                 final int cardId = c.getInt(idxId);
@@ -161,7 +161,7 @@ public class SelectCardActivity extends AppCompatActivity {
                 .setMessage("Bạn có chắc muốn xóa thẻ •••• " + lastFour + " không?")
                 .setNegativeButton("Hủy", null)
                 .setPositiveButton("Xóa", (d, w) -> {
-                    if (dbHelper.deleteCard(cardId)) {
+                    if (cardDao.deleteCard(cardId)) {
                         if (cardId == selectedCardId) {
                             selectedCardId = -1;
                             selectedLastFour = "";

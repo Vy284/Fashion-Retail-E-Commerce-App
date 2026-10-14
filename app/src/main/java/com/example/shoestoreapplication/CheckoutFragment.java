@@ -23,7 +23,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.adapters.CheckoutAdapter;
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.CartDao;
+import com.example.shoestoreapplication.database.dao.OrderDao;
 import com.example.shoestoreapplication.models.CartItem;
 import com.example.shoestoreapplication.utils.SessionManager;
 
@@ -41,7 +42,8 @@ public class CheckoutFragment extends Fragment {
     private ImageButton btnBack;
     private LinearLayout layoutSelectCard;
 
-    private DatabaseHelper dbHelper;
+    private CartDao cartDao;
+    private OrderDao orderDao;
     private SessionManager sessionManager;
     private int cartId = -1;
     private int totalAmount = 0;
@@ -71,12 +73,13 @@ public class CheckoutFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_checkout, container, false);
 
-        dbHelper = new DatabaseHelper(requireContext());
+        cartDao = new CartDao(requireContext());
+        orderDao = new OrderDao(requireContext());
         sessionManager = new SessionManager(requireContext());
 
         int userId = sessionManager.getUserId();
         if (userId != -1) {
-            cartId = dbHelper.getOrCreateCartId(userId);
+            cartId = cartDao.getOrCreateCartId(userId);
         }
 
         rvCheckoutItems = view.findViewById(R.id.rv_checkout_items);
@@ -121,7 +124,7 @@ public class CheckoutFragment extends Fragment {
 
         List<CartItem> items = cartId == -1
                 ? new ArrayList<>()
-                : dbHelper.getCartItems(cartId);
+                : cartDao.getCartItems(cartId);
         rvCheckoutItems.setAdapter(new CheckoutAdapter(items));
 
         totalAmount = 0;
@@ -174,7 +177,7 @@ public class CheckoutFragment extends Fragment {
             return;
         }
 
-        long orderId = dbHelper.placeOrder(
+        long orderId = orderDao.placeOrder(
                 sessionManager.getUserId(), cartId, name, phone, address, paymentMethod, totalAmount);
 
         if (orderId != -1) {

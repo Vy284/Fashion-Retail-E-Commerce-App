@@ -5,34 +5,64 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.R;
 import com.example.shoestoreapplication.models.CartItem;
 import com.example.shoestoreapplication.utils.ImageUtils;
+
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
     private List<CartItem> cartItems;
     private final OnCartChangeListener listener;
+    private final DecimalFormat priceFormat = new DecimalFormat("#,###");
 
     public interface OnCartChangeListener {
+        /** newQuantity có thể là 0 => Fragment sẽ hỏi xác nhận xóa. */
         void onQuantityChanged(CartItem item, int newQuantity);
         void onRemove(CartItem item);
     }
 
     public CartAdapter(List<CartItem> cartItems, OnCartChangeListener listener) {
-        this.cartItems = cartItems;
+        this.cartItems = cartItems == null ? new ArrayList<>() : cartItems;
         this.listener = listener;
     }
 
     public void updateData(List<CartItem> newItems) {
-        this.cartItems = newItems;
-        notifyDataSetChanged();
+        final List<CartItem> oldList = cartItems;
+        final List<CartItem> newList = newItems == null ? new ArrayList<>() : newItems;
+
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override public int getOldListSize() { return oldList.size(); }
+            @Override public int getNewListSize() { return newList.size(); }
+
+            @Override
+            public boolean areItemsTheSame(int o, int n) {
+                return oldList.get(o).getCartItemId() == newList.get(n).getCartItemId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(int o, int n) {
+                CartItem a = oldList.get(o), b = newList.get(n);
+                return a.getQuantity() == b.getQuantity()
+                        && a.getPrice() == b.getPrice()
+                        && Objects.equals(a.getProductName(), b.getProductName())
+                        && Objects.equals(a.getSize(), b.getSize())
+                        && Objects.equals(a.getColor(), b.getColor())
+                        && Objects.equals(a.getImageUrl(), b.getImageUrl());
+            }
+        });
+
+        cartItems = newList;
+        result.dispatchUpdatesTo(this);
     }
 
     @NonNull
@@ -48,37 +78,25 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         CartItem item = cartItems.get(position);
 
         holder.tvName.setText(item.getProductName());
-        holder.tvSize.setText("Size: " + item.getSize());
-        holder.tvQty.setText(String.valueOf(item.getQuantity()));
-        holder.tvPrice.setText(new DecimalFormat("#,###").format(item.getPrice()) + "đ");
 
-        // Ảnh đã được lấy sẵn trong getCartItems(): không cần truy vấn DB trong Adapter
+        String color = item.getColor();
+        String variant = "Size: " + item.getSize()
+                + (color.isEmpty() ? "" : "  |  Màu: " + color);
+        holder.tvSize.setText(variant);
+
+        holder.tvQty.setText(String.valueOf(item.getQuantity()));
+        holder.tvPrice.setText(priceFormat.format(item.getPrice()) + "đ");
+
         if (holder.imgProduct != null) {
             ImageUtils.load(holder.imgProduct, item.getImageUrl());
         }
 
-        holder.btnPlus.setOnClickListener(v -> {
-            int newQty = item.getQuantity() + 1;
-            item.setQuantity(newQty);
-            holder.tvQty.setText(String.valueOf(newQty));
-            listener.onQuantityChanged(item, newQty);
-        });
+        // Không sửa dữ liệu tại đây: ViewModel kiểm tra rồi cập nhật lại danh sách
+        holder.btnPlus.setOnClickListener(v ->
+                listener.onQuantityChanged(item, item.getQuantity() + 1));
 
-        holder.btnMinus.setOnClickListener(v -> {
-            if (item.getQuantity() > 1) {
-                int newQty = item.getQuantity() - 1;
-                item.setQuantity(newQty);
-                holder.tvQty.setText(String.valueOf(newQty));
-                listener.onQuantityChanged(item, newQty);
-            } else {
-                new AlertDialog.Builder(v.getContext())
-                        .setTitle("Xóa sản phẩm")
-                        .setMessage("Bỏ \"" + item.getProductName() + "\" khỏi giỏ hàng?")
-                        .setPositiveButton("Xóa", (d, w) -> listener.onRemove(item))
-                        .setNegativeButton("Hủy", null)
-                        .show();
-            }
-        });
+        holder.btnMinus.setOnClickListener(v ->
+                listener.onQuantityChanged(item, item.getQuantity() - 1));
     }
 
     @Override
@@ -97,6 +115,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             btnMinus = itemView.findViewById(R.id.btn_minus);
             btnPlus = itemView.findViewById(R.id.btn_plus);
 
+            // Giữ cách tìm id cũ cho tới khi bạn chốt tên id trong item_cart_product.xml
             String pkg = itemView.getContext().getPackageName();
             int id = itemView.getResources().getIdentifier("img_product", "id", pkg);
             if (id == 0) id = itemView.getResources().getIdentifier("img_cart_product", "id", pkg);

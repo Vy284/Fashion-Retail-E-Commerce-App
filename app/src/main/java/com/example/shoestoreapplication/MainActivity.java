@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.UserDao;
 import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -19,12 +20,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Khởi tạo Database
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-        dbHelper.getWritableDatabase();
+        DatabaseHelper.getInstance(this).getWritableDatabase();
+        UserDao userDao = new UserDao(this);
 
         // Phiên đăng nhập cũ trỏ tới user không còn trong DB -> đăng xuất
         SessionManager sessionManager = new SessionManager(this);
-        if (sessionManager.isLoggedIn() && !dbHelper.userExists(sessionManager.getUserId())) {
+        if (sessionManager.isLoggedIn() && !userDao.existsById(sessionManager.getUserId())) {
             sessionManager.logout();
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

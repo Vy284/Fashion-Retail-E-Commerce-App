@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.UserDao;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -20,14 +20,14 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean isPasswordVisible = false;
     private boolean isConfirmPasswordVisible = false;
 
-    private DatabaseHelper dbHelper;
+    private UserDao userDao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        dbHelper = new DatabaseHelper(this);
+        userDao = new UserDao(this);
         initViews();
         setupListeners();
     }
@@ -50,18 +50,15 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnGoToLogin.setOnClickListener(v -> finish()); // Đóng activity này, quay lại Login
 
-
         btnTogglePassword.setOnClickListener(v -> {
             isPasswordVisible = !isPasswordVisible;
             togglePasswordVisibility(edtPassword, btnTogglePassword, isPasswordVisible);
         });
 
-
         btnToggleConfirmPassword.setOnClickListener(v -> {
             isConfirmPasswordVisible = !isConfirmPasswordVisible;
             togglePasswordVisibility(edtConfirmPassword, btnToggleConfirmPassword, isConfirmPasswordVisible);
         });
-
 
         btnRegister.setOnClickListener(v -> handleRegister());
     }
@@ -76,7 +73,6 @@ public class RegisterActivity extends AppCompatActivity {
         }
         editText.setSelection(editText.getText().length());
     }
-
 
     private boolean isValidEmail(String email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
@@ -93,50 +89,42 @@ public class RegisterActivity extends AppCompatActivity {
         String password = edtPassword.getText().toString().trim();
         String confirmPassword = edtConfirmPassword.getText().toString().trim();
 
-
         if (fullName.isEmpty() || phone.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
             return;
         }
-
 
         if (fullName.length() < 2) {
             Toast.makeText(this, "Họ và tên quá ngắn!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-
         if (!isValidPhone(phone)) {
             Toast.makeText(this, "Số điện thoại không hợp lệ (Bắt đầu bằng 0, gồm 10-11 số)!", Toast.LENGTH_SHORT).show();
             return;
         }
-
 
         if (!isValidEmail(email)) {
             Toast.makeText(this, "Email không đúng định dạng!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-
         if (password.length() < 6) {
             Toast.makeText(this, "Mật khẩu phải có ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show();
             return;
         }
-
 
         if (!password.equals(confirmPassword)) {
             Toast.makeText(this, "Mật khẩu xác nhận không khớp!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-
-        if (dbHelper.isUserExists(email, phone)) {
+        if (userDao.existsByEmailOrPhone(email, phone)) {
             Toast.makeText(this, "Email hoặc số điện thoại đã được đăng ký!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-
-        long newUserId = dbHelper.registerUser(fullName, email, phone, password);
+        long newUserId = userDao.registerUser(fullName, email, phone, password);
 
         if (newUserId != -1) {
             Toast.makeText(this, "Đăng ký thành công! Vui lòng đăng nhập.", Toast.LENGTH_LONG).show();

@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.adapters.OrderAdapter;
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.OrderDao;
 import com.example.shoestoreapplication.models.Order;
 import com.example.shoestoreapplication.utils.Nav;
 import com.example.shoestoreapplication.utils.SessionManager;
@@ -27,7 +27,7 @@ public class OrderHistoryFragment extends Fragment {
     private LinearLayout layoutEmpty;
     private MaterialButton btnShopNow;
 
-    private DatabaseHelper dbHelper;
+    private OrderDao orderDao;
     private SessionManager sessionManager;
 
     @Nullable
@@ -35,7 +35,7 @@ public class OrderHistoryFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_orders, container, false);
 
-        dbHelper = new DatabaseHelper(requireContext());
+        orderDao = new OrderDao(requireContext());
         sessionManager = new SessionManager(requireContext());
 
         rvOrders = view.findViewById(R.id.rv_order_history);
@@ -61,7 +61,7 @@ public class OrderHistoryFragment extends Fragment {
         int userId = sessionManager.getUserId();
 
         // Chưa đăng nhập: hiện màn trống, không truy vấn
-        List<Order> orderList = userId == -1 ? null : dbHelper.getOrderHistory(userId);
+        List<Order> orderList = userId == -1 ? null : orderDao.getOrderHistory(userId);
 
         if (orderList == null || orderList.isEmpty()) {
             rvOrders.setVisibility(View.GONE);

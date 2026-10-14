@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.adapters.ProductAdapter;
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.WishlistDao;
 import com.example.shoestoreapplication.models.Product;
 import com.example.shoestoreapplication.utils.Nav;
 import com.example.shoestoreapplication.utils.SessionManager;
@@ -21,7 +21,7 @@ import java.util.List;
 
 public class WishlistFragment extends Fragment {
 
-    private DatabaseHelper db;
+    private WishlistDao wishlistDao;
     private SessionManager session;
     private ProductAdapter adapter;
     private RecyclerView rv;
@@ -37,7 +37,7 @@ public class WishlistFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        db = new DatabaseHelper(requireContext());
+        wishlistDao = new WishlistDao(requireContext());
         session = new SessionManager(requireContext());
 
         rv = view.findViewById(R.id.rv_wishlist);
@@ -56,7 +56,7 @@ public class WishlistFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        List<Product> list = db.getWishlistProducts(session.getUserId());
+        List<Product> list = wishlistDao.getWishlistProducts(session.getUserId());
         adapter.setItems(list);
         rv.setVisibility(list.isEmpty() ? View.GONE : View.VISIBLE);
         layoutEmpty.setVisibility(list.isEmpty() ? View.VISIBLE : View.GONE);

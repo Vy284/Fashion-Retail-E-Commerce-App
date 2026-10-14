@@ -1,5 +1,6 @@
 package com.example.shoestoreapplication;
 
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -18,12 +19,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.CartDao;
+import com.example.shoestoreapplication.database.dao.ProductDao;
+import com.example.shoestoreapplication.database.dao.WishlistDao;
 import com.example.shoestoreapplication.models.ProductVariant;
 import com.example.shoestoreapplication.utils.ImageUtils;
 import com.example.shoestoreapplication.utils.Money;
 import com.example.shoestoreapplication.utils.SessionManager;
-import android.content.res.ColorStateList;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -42,7 +44,9 @@ public class ProductDetailFragment extends Fragment {
         return f;
     }
 
-    private DatabaseHelper db;
+    private ProductDao productDao;
+    private CartDao cartDao;
+    private WishlistDao wishlistDao;
     private int productId;
     private int userId;
 
@@ -66,7 +70,9 @@ public class ProductDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        db = new DatabaseHelper(requireContext());
+        productDao = new ProductDao(requireContext());
+        cartDao = new CartDao(requireContext());
+        wishlistDao = new WishlistDao(requireContext());
         userId = new SessionManager(requireContext()).getUserId();
         productId = requireArguments().getInt(ARG_ID);
 
@@ -82,7 +88,7 @@ public class ProductDetailFragment extends Fragment {
                 requireActivity().getOnBackPressedDispatcher().onBackPressed());
 
         // Thông tin chính
-        try (Cursor c = db.getProductDetail(productId)) {
+        try (Cursor c = productDao.getProductDetail(productId)) {
             if (c.moveToFirst()) {
                 ((TextView) view.findViewById(R.id.tv_product_name)).setText(c.getString(0));
                 ((TextView) view.findViewById(R.id.tv_product_price)).setText(Money.vnd(c.getInt(1)));
@@ -92,7 +98,7 @@ public class ProductDetailFragment extends Fragment {
         }
 
         // Ảnh chính + ảnh nhỏ
-        List<String> images = db.getProductImages(productId);
+        List<String> images = productDao.getProductImages(productId);
         ImageUtils.load(imgMain, images.isEmpty() ? null : images.get(0));
         llThumbs.removeAllViews();
         if (images.size() > 1) {
@@ -112,7 +118,7 @@ public class ProductDetailFragment extends Fragment {
         }
 
         // Màu và size
-        variants = db.getVariants(productId);
+        variants = productDao.getVariants(productId);
         if (!variants.isEmpty()) selectedColor = variants.get(0).color;
         renderColors();
         renderSizes();
@@ -121,7 +127,7 @@ public class ProductDetailFragment extends Fragment {
         renderHeart();
         btnFavorite.setOnClickListener(v -> {
             if (userId == -1) return;
-            boolean now = db.toggleWishlist(userId, productId);
+            boolean now = wishlistDao.toggleWishlist(userId, productId);
             renderHeart();
             Toast.makeText(requireContext(),
                     now ? "Đã thêm vào yêu thích" : "Đã bỏ khỏi yêu thích", Toast.LENGTH_SHORT).show();
@@ -151,7 +157,7 @@ public class ProductDetailFragment extends Fragment {
 
     // ---------- vẽ giao diện ----------
     private void renderHeart() {
-        boolean liked = userId != -1 && db.isInWishlist(userId, productId);
+        boolean liked = userId != -1 && wishlistDao.isInWishlist(userId, productId);
         btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
         btnFavorite.setImageTintList(ColorStateList.valueOf(
                 Color.parseColor(liked ? "#FF5722" : "#BDBDBD")));
@@ -255,8 +261,8 @@ public class ProductDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "Sản phẩm không đủ hàng", Toast.LENGTH_SHORT).show();
             return;
         }
-        int cartId = db.getOrCreateCartId(userId);
-        boolean ok = db.addToCart(cartId, pv.id, qty);
+        int cartId = cartDao.getOrCreateCartId(userId);
+        boolean ok = cartDao.addToCart(cartId, pv.id, qty);
         Toast.makeText(requireContext(),
                 ok ? "Đã thêm vào giỏ hàng" : "Thêm vào giỏ thất bại", Toast.LENGTH_SHORT).show();
     }

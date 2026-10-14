@@ -14,7 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.UserDao;
 import com.example.shoestoreapplication.utils.SessionManager;
 import com.google.android.material.imageview.ShapeableImageView;
 
@@ -27,9 +27,9 @@ public class ProfileActivity extends AppCompatActivity {
     private Button btnSave;
     private Button btnLogout;
     private Button btnGoToOrderHistory;
-    private Button btnMyCards; // Khai báo thêm biến nếu cần (hoặc dùng trực tiếp bằng findViewById)
+    private Button btnMyCards;
 
-    private DatabaseHelper dbHelper;
+    private UserDao userDao;
     private SessionManager sessionManager;
     private int currentUserId;
     private String selectedAvatarUri = null;
@@ -53,7 +53,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        dbHelper = new DatabaseHelper(this);
+        userDao = new UserDao(this);
         sessionManager = new SessionManager(this);
         currentUserId = sessionManager.getUserId();
 
@@ -77,32 +77,32 @@ public class ProfileActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btn_save);
         btnLogout = findViewById(R.id.btn_logout);
         btnGoToOrderHistory = findViewById(R.id.btn_go_to_order_history);
-        btnMyCards = findViewById(R.id.btn_my_cards); // Ánh xạ ID nếu layout của bạn có nút này
+        btnMyCards = findViewById(R.id.btn_my_cards);
     }
 
     private void loadUserData() {
-        Cursor cursor = dbHelper.getUserById(currentUserId);
-        if (cursor != null && cursor.moveToFirst()) {
-            String fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name"));
-            String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
-            String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
-            String avatarUrl = cursor.getString(cursor.getColumnIndexOrThrow("avatar_url"));
+        try (Cursor cursor = userDao.getUserById(currentUserId)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String fullName = cursor.getString(cursor.getColumnIndexOrThrow("full_name"));
+                String email = cursor.getString(cursor.getColumnIndexOrThrow("email"));
+                String phone = cursor.getString(cursor.getColumnIndexOrThrow("phone"));
+                String avatarUrl = cursor.getString(cursor.getColumnIndexOrThrow("avatar_url"));
 
-            tvHeaderName.setText(fullName);
-            tvHeaderEmail.setText(email);
-            edtFullName.setText(fullName);
-            edtEmail.setText(email);
-            edtPhone.setText(phone);
+                tvHeaderName.setText(fullName);
+                tvHeaderEmail.setText(email);
+                edtFullName.setText(fullName);
+                edtEmail.setText(email);
+                edtPhone.setText(phone);
 
-            if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                try {
-                    imgAvatar.setImageURI(Uri.parse(avatarUrl));
-                    selectedAvatarUri = avatarUrl;
-                } catch (Exception e) {
-                    imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    try {
+                        imgAvatar.setImageURI(Uri.parse(avatarUrl));
+                        selectedAvatarUri = avatarUrl;
+                    } catch (Exception e) {
+                        imgAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
+                    }
                 }
             }
-            cursor.close();
         }
     }
 
@@ -126,8 +126,7 @@ public class ProfileActivity extends AppCompatActivity {
             finish();
         });
 
-        // Thêm sự kiện chuyển màn hình sang SelectCardActivity cạnh btnGoToOrderHistory
-        findViewById(R.id.btn_my_cards).setOnClickListener(v ->
+        btnMyCards.setOnClickListener(v ->
                 startActivity(new Intent(ProfileActivity.this, SelectCardActivity.class))
         );
 
@@ -150,19 +149,19 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        boolean isUpdated = dbHelper.updateUserProfile(currentUserId, newName, newPhone, selectedAvatarUri);
+        boolean isUpdated = userDao.updateUserProfile(currentUserId, newName, newPhone, selectedAvatarUri);
 
         if (!newPass.isEmpty()) {
             if (oldPass.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (dbHelper.checkOldPassword(currentUserId, oldPass)) {
+            if (userDao.checkOldPassword(currentUserId, oldPass)) {
                 if (newPass.length() < 6) {
                     Toast.makeText(this, "Mật khẩu mới phải có ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                dbHelper.updatePassword(currentUserId, newPass);
+                userDao.updatePassword(currentUserId, newPass);
                 edtOldPassword.setText("");
                 edtNewPassword.setText("");
             } else {

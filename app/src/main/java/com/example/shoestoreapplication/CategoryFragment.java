@@ -19,7 +19,8 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shoestoreapplication.adapters.ProductAdapter;
-import com.example.shoestoreapplication.database.DatabaseHelper;
+import com.example.shoestoreapplication.database.dao.ProductDao;
+import com.example.shoestoreapplication.database.dao.WishlistDao;
 import com.example.shoestoreapplication.models.Product;
 import com.example.shoestoreapplication.utils.Nav;
 import com.example.shoestoreapplication.utils.SessionManager;
@@ -32,7 +33,8 @@ import java.util.List;
 
 public class CategoryFragment extends Fragment {
 
-    private DatabaseHelper db;
+    private ProductDao productDao;
+    private WishlistDao wishlistDao;
     private SessionManager session;
     private ProductAdapter adapter;
 
@@ -53,7 +55,8 @@ public class CategoryFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        db = new DatabaseHelper(requireContext());
+        productDao = new ProductDao(requireContext());
+        wishlistDao = new WishlistDao(requireContext());
         session = new SessionManager(requireContext());
 
         edtSearch = view.findViewById(R.id.edt_search);
@@ -73,13 +76,13 @@ public class CategoryFragment extends Fragment {
             @Override
             public boolean isWishlisted(Product p) {
                 int uid = session.getUserId();
-                return uid != -1 && db.isInWishlist(uid, p.getId());
+                return uid != -1 && wishlistDao.isInWishlist(uid, p.getId());
             }
 
             @Override
             public boolean onToggle(Product p) {
                 int uid = session.getUserId();
-                return uid != -1 && db.toggleWishlist(uid, p.getId());
+                return uid != -1 && wishlistDao.toggleWishlist(uid, p.getId());
             }
         });
 
@@ -113,7 +116,7 @@ public class CategoryFragment extends Fragment {
     }
 
     private void loadProducts() {
-        List<Product> list = db.filterProducts(
+        List<Product> list = productDao.filterProducts(
                 edtSearch.getText().toString(), gender, selectedBrands, sort);
         adapter.setItems(list);
         tvCount.setText(list.size() + " sản phẩm tìm thấy");

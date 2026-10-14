@@ -29,15 +29,33 @@
         android:layout_height="1dp"
         android:background="#EFEFEF" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_cart_items"
+    <!-- Vùng danh sách + trạng thái giỏ trống -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:padding="12dp"
-        tools:itemCount="3"
-        tools:listitem="@layout/item_cart_product" />
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_cart_items"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:padding="12dp"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_cart_product" />
+
+        <TextView
+            android:id="@+id/tv_empty_cart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="Giỏ hàng của bạn đang trống"
+            android:textColor="#757575"
+            android:textSize="16sp"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -63,7 +81,7 @@
                 android:id="@+id/tv_subtotal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="9.180.000đ"
+                android:text="0đ"
                 android:textColor="#000000"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -113,7 +131,7 @@
                 android:id="@+id/tv_total_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="9.180.000đ"
+                android:text="0đ"
                 android:textColor="#FF5722"
                 android:textSize="18sp"
                 android:textStyle="bold" />
