@@ -20,7 +20,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DatabaseHelper";
     private static final String DATABASE_NAME = "shoes_retail.db";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5; // đổi từ 4 lên 5 (bỏ tính năng thẻ)
     private static final String SQL_FILE = "database/shoes_retail_ecommerce_schema_seed.sql";
 
     private static DatabaseHelper instance;

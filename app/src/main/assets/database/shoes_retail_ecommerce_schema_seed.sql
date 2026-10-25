@@ -15,7 +15,6 @@ DROP TABLE IF EXISTS Product_Variants;
 DROP TABLE IF EXISTS Products;
 DROP TABLE IF EXISTS Categories;
 DROP TABLE IF EXISTS Brands;
-DROP TABLE IF EXISTS Cards;
 DROP TABLE IF EXISTS Users;
 
 -- Enable foreign key constraints
@@ -30,17 +29,6 @@ CREATE TABLE Users (
     password_hash TEXT NOT NULL,
     avatar_url TEXT,
     created_at TEXT DEFAULT (datetime('now', 'localtime'))
-);
-
--- 1.5 Cards Table
-CREATE TABLE Cards (
-    card_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    card_holder_name TEXT NOT NULL,
-    last_four_digits TEXT NOT NULL,
-    expiry_date TEXT NOT NULL,
-    cvv TEXT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
 -- 2. Brands Table
@@ -154,7 +142,7 @@ CREATE TABLE Orders (
 CREATE TABLE Payment (
     payment_id INTEGER PRIMARY KEY AUTOINCREMENT,
     order_id INTEGER NOT NULL UNIQUE,
-    method TEXT CHECK(method IN ('cod', 'credit_card', 'momo', 'vnpay')) DEFAULT 'cod',
+    method TEXT CHECK(method IN ('cod', 'bank_transfer', 'momo', 'vnpay')) DEFAULT 'cod',
     status TEXT CHECK(status IN ('pending', 'completed', 'failed', 'refunded')) DEFAULT 'pending',
     transaction_date TEXT DEFAULT (datetime('now', 'localtime')),
     FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE
@@ -190,9 +178,6 @@ CREATE TABLE IF NOT EXISTS Notifications (
 -- SEED DATA MAU
 INSERT INTO Users (full_name, email, phone, password_hash, avatar_url) VALUES
 ('Phương Loan', 'loan@example.com', '0901234567', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 'avatar_1');
-
-INSERT INTO Cards (user_id, card_holder_name, last_four_digits, expiry_date, cvv) VALUES
-(1, 'PHUONG LOAN', '4242', '12/27', '123');
 
 INSERT INTO Brands (name, logo_url) VALUES
 ('Nike', 'brand_nike'),

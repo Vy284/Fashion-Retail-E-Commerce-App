@@ -13,7 +13,7 @@
         android:theme="@style/Theme.ShoeStoreApplication">
 
         <activity
-            android:name="com.example.shoestoreapplication.WelcomeActivity"
+            android:name=".WelcomeActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -22,35 +22,12 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.example.shoestoreapplication.LoginActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name="com.example.shoestoreapplication.RegisterActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name="com.example.shoestoreapplication.MainActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name="com.example.shoestoreapplication.ProfileActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <activity
-            android:name="com.example.shoestoreapplication.AddCardActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-
-        <!-- Thêm SelectCardActivity vào đây -->
-        <activity
-            android:name=".SelectCardActivity"
-            android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".RegisterActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".MainActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ProfileActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".AddCardActivity" android:exported="false" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".SelectCardActivity" android:exported="false" />
 
     </application>
 

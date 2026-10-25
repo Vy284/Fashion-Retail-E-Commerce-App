@@ -27,7 +27,6 @@ public class ProfileActivity extends AppCompatActivity {
     private Button btnSave;
     private Button btnLogout;
     private Button btnGoToOrderHistory;
-    private Button btnMyCards;
 
     private UserDao userDao;
     private SessionManager sessionManager;
@@ -40,7 +39,12 @@ public class ProfileActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     Uri imageUri = result.getData().getData();
                     if (imageUri != null) {
-                        getContentResolver().takePersistableUriPermission(imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        try {
+                            getContentResolver().takePersistableUriPermission(
+                                    imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        } catch (SecurityException ignored) {
+                            // Một số nguồn ảnh không cho giữ quyền lâu dài
+                        }
                         selectedAvatarUri = imageUri.toString();
                         imgAvatar.setImageURI(imageUri);
                     }
@@ -77,7 +81,6 @@ public class ProfileActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btn_save);
         btnLogout = findViewById(R.id.btn_logout);
         btnGoToOrderHistory = findViewById(R.id.btn_go_to_order_history);
-        btnMyCards = findViewById(R.id.btn_my_cards);
     }
 
     private void loadUserData() {
@@ -120,15 +123,11 @@ public class ProfileActivity extends AppCompatActivity {
 
         btnLogout.setOnClickListener(v -> {
             sessionManager.logout();
-            Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+            Intent intent = new Intent(ProfileActivity.this, WelcomeActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         });
-
-        btnMyCards.setOnClickListener(v ->
-                startActivity(new Intent(ProfileActivity.this, SelectCardActivity.class))
-        );
 
         btnGoToOrderHistory.setOnClickListener(v -> {
             getSupportFragmentManager().beginTransaction()
@@ -149,25 +148,30 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        boolean isUpdated = userDao.updateUserProfile(currentUserId, newName, newPhone, selectedAvatarUri);
-
-        if (!newPass.isEmpty()) {
+        // Kiểm tra mật khẩu TRƯỚC khi lưu bất cứ thứ gì
+        boolean changePassword = !newPass.isEmpty();
+        if (changePassword) {
             if (oldPass.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu!", Toast.LENGTH_SHORT).show();
                 return;
             }
-            if (userDao.checkOldPassword(currentUserId, oldPass)) {
-                if (newPass.length() < 6) {
-                    Toast.makeText(this, "Mật khẩu mới phải có ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                userDao.updatePassword(currentUserId, newPass);
-                edtOldPassword.setText("");
-                edtNewPassword.setText("");
-            } else {
+            if (!userDao.checkOldPassword(currentUserId, oldPass)) {
                 Toast.makeText(this, "Mật khẩu hiện tại không đúng!", Toast.LENGTH_SHORT).show();
                 return;
             }
+            if (newPass.length() < 6) {
+                Toast.makeText(this, "Mật khẩu mới phải có ít nhất 6 ký tự!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        // Mọi thứ hợp lệ -> mới lưu
+        boolean isUpdated = userDao.updateUserProfile(currentUserId, newName, newPhone, selectedAvatarUri);
+
+        if (changePassword) {
+            userDao.updatePassword(currentUserId, newPass);
+            edtOldPassword.setText("");
+            edtNewPassword.setText("");
         }
 
         if (isUpdated) {

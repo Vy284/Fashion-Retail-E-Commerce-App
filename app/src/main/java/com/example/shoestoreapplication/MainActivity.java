@@ -23,11 +23,12 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper.getInstance(this).getWritableDatabase();
         UserDao userDao = new UserDao(this);
 
-        // Phiên đăng nhập cũ trỏ tới user không còn trong DB -> đăng xuất
+        // Phiên đăng nhập cũ trỏ tới user không còn trong DB -> đăng xuất, về Welcome
         SessionManager sessionManager = new SessionManager(this);
-        if (sessionManager.isLoggedIn() && !userDao.existsById(sessionManager.getUserId())) {
+        if (!sessionManager.isLoggedIn()
+                || !userDao.existsById(sessionManager.getUserId())) {
             sessionManager.logout();
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, WelcomeActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();

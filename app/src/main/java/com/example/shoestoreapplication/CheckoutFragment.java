@@ -1,7 +1,5 @@
 package com.example.shoestoreapplication;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,13 +7,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -37,36 +32,15 @@ public class CheckoutFragment extends Fragment {
     private RecyclerView rvCheckoutItems;
     private EditText edtName, edtPhone, edtAddress;
     private RadioGroup rgPayment;
-    private TextView tvSubtotal, tvTotal, tvSelectedCard;
-    private Button btnPlaceOrder, btnSelectCard;
+    private TextView tvSubtotal, tvTotal;
+    private Button btnPlaceOrder;
     private ImageButton btnBack;
-    private LinearLayout layoutSelectCard;
 
     private CartDao cartDao;
     private OrderDao orderDao;
     private SessionManager sessionManager;
     private int cartId = -1;
     private int totalAmount = 0;
-
-    private int selectedCardId = -1;
-    private String selectedLastFour = "";
-
-    private final ActivityResultLauncher<Intent> selectCardLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    selectedCardId = result.getData().getIntExtra("card_id", -1);
-                    selectedLastFour = result.getData().getStringExtra("last_four");
-                    if (selectedLastFour == null) selectedLastFour = "";
-
-                    if (selectedCardId != -1) {
-                        tvSelectedCard.setText("Thẻ đã chọn: •••• " + selectedLastFour);
-                        tvSelectedCard.setTextColor(0xFF111111);
-                    } else {
-                        tvSelectedCard.setText("Chưa chọn thẻ");
-                        tvSelectedCard.setTextColor(0xFF757575);
-                    }
-                }
-            });
 
     @Nullable
     @Override
@@ -91,28 +65,9 @@ public class CheckoutFragment extends Fragment {
         tvTotal = view.findViewById(R.id.tv_checkout_total);
         btnPlaceOrder = view.findViewById(R.id.btn_place_order);
         btnBack = view.findViewById(R.id.btn_back);
-        layoutSelectCard = view.findViewById(R.id.layout_select_card);
-        tvSelectedCard = view.findViewById(R.id.tv_selected_card);
-        btnSelectCard = view.findViewById(R.id.btn_select_card);
 
         btnBack.setOnClickListener(v -> requireActivity().getSupportFragmentManager().popBackStack());
         btnPlaceOrder.setOnClickListener(v -> processOrder());
-
-        // Hiện / ẩn khu vực chọn thẻ
-        rgPayment.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.rb_card) {
-                layoutSelectCard.setVisibility(View.VISIBLE);
-            } else {
-                layoutSelectCard.setVisibility(View.GONE);
-            }
-        });
-
-        // Mở màn chọn thẻ, truyền tổng tiền
-        btnSelectCard.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), SelectCardActivity.class);
-            intent.putExtra("total", totalAmount);
-            selectCardLauncher.launch(intent);
-        });
 
         loadCartData();
 
@@ -162,12 +117,6 @@ public class CheckoutFragment extends Fragment {
         String paymentMethod;
         if (checkedId == R.id.rb_cod) {
             paymentMethod = "COD";
-        } else if (checkedId == R.id.rb_card) {
-            if (selectedCardId == -1) {
-                Toast.makeText(requireContext(), "Vui lòng chọn thẻ để thanh toán", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            paymentMethod = "CARD";
         } else {
             paymentMethod = "Transfer";
         }
